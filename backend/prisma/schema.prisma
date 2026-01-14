@@ -6,9 +6,79 @@
 
 generator client {
   provider = "prisma-client"
-  output   = "../generated/prisma"
+  output   = "../src/generated/prisma"
+  moduleFormat = "cjs"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
+}
+
+enum TrustLevel {
+  NEWCOMER
+  TRUSTED
+  VETERAN
+}
+
+enum ListingType {
+  OFFER
+  REQUEST
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  name     String
+  email    String @unique
+  password String
+
+  trustLevel TrustLevel
+
+  listings     Listing[]
+  transactions Transaction[]
+  reviews      Review[]
+}
+
+model Listing {
+  id          Int         @id @default(autoincrement())
+  title       String
+  description String
+  category    String
+  type        ListingType
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  transactions Transaction[]
+}
+
+model Transaction {
+  id Int @id @default(autoincrement())
+
+  userId    Int
+  listingId Int
+
+  status TransactionStatus
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  review Review?
+}
+
+model Review {
+  id      Int     @id @default(autoincrement())
+  rating  Int
+  comment String?
+
+  userId        Int
+  transactionId Int @unique
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transaction Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
 }
