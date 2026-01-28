@@ -7,11 +7,12 @@ async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.enableCors();
     app.enableShutdownHooks();
+    app.setGlobalPrefix('api');
     app.useGlobalPipes(new common_1.ValidationPipe({
         whitelist: true,
         forbidNonWhitelisted: true,
         transform: true,
-        transformOptions: { enableImplicitConversion: true }
+        transformOptions: { enableImplicitConversion: true },
     }));
     await app.listen(process.env.PORT ?? 3001);
 }
