@@ -11,20 +11,14 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PrismaService = void 0;
 const common_1 = require("@nestjs/common");
+const client_1 = require("@prisma/client");
 const adapter_mariadb_1 = require("@prisma/adapter-mariadb");
-const client_1 = require("../generated/prisma/client");
 let PrismaService = class PrismaService extends client_1.PrismaClient {
     constructor() {
-        const url = process.env.DATABASE_URL;
-        if (!url)
-            throw new Error("Missing database_url.");
-        const adapter = new adapter_mariadb_1.PrismaMariaDb(url);
+        if (!process.env.DATABASE_URL)
+            throw new Error('DATABASE_URL missing .env');
+        const adapter = new adapter_mariadb_1.PrismaMariaDb(process.env.DATABASE_URL);
         super({ adapter });
-    }
-    async enableShutdownHooks(app) {
-        this.$on('beforeExit', async () => {
-            await app.close();
-        });
     }
     async onModuleInit() {
         await this.$connect();
