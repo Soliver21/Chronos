@@ -8,19 +8,19 @@ export declare class AuthService {
     constructor(jwtService: JwtService, prisma: PrismaService);
     authRegister(user: RegisterUserDto): Promise<{
         user: {
-            id: number;
-            email: string;
             name: string;
+            email: string;
             trustLevel: import(".prisma/client").$Enums.TrustLevel;
+            id: number;
         };
         accessToken: string;
     }>;
     authLogin(user: LoginUserDto): Promise<{
         user: {
-            id: number;
-            email: string;
             name: string;
+            email: string;
             trustLevel: import(".prisma/client").$Enums.TrustLevel;
+            id: number;
         };
         accessToken: string;
     }>;
