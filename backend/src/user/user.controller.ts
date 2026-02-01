@@ -1,4 +1,4 @@
-import { Controller, ParseIntPipe, UseGuards, Get, Patch, Param, Body, Req } from "@nestjs/common";
+/* import { Controller, ParseIntPipe, UseGuards, Get, Patch, Param, Body, Req } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 import { UpdateUserDTO } from "./dto/update-user.dto";
@@ -29,4 +29,4 @@ export class UserController {
         return await this.service.getUserStatistics(id);
     }
 
-}
+} */
