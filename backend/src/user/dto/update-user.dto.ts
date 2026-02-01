@@ -1,4 +1,4 @@
-import {IsOptional, IsString} from "class-validator";
+/* import {IsOptional, IsString} from "class-validator";
 export class UpdateUserDTO {
     @IsOptional() @IsString()
     name?: string;
@@ -9,4 +9,4 @@ export class UpdateUserDTO {
     @IsOptional() @IsString()
     avatar?: string;
 
-}
+} */
