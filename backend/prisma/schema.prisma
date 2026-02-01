@@ -50,6 +50,7 @@ model Listing {
   description String
   category    String
   type        ListingType
+  imageUrl    String?
 
   userId Int
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
