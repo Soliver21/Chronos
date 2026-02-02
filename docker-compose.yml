@@ -26,6 +26,7 @@ services:
       npm install &&
       npx prisma generate &&
       npx prisma db push &&
+      npm run prisma:seed &&
       npm run start:dev
       "
     ports:
