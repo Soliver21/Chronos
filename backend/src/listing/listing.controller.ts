@@ -9,6 +9,7 @@ import {
   ParseIntPipe,
   UseGuards,
   Req,
+  Query,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ListingService } from './listing.service';
@@ -20,13 +21,14 @@ export class ListingController {
   constructor(private readonly listingService: ListingService) {}
 
   @Get()
-  getAll() {
-    return this.listingService.findMany();
+  getAll(@Query('categoryId') categoryId?: string) {
+    const parsedCategoryId = categoryId ? parseInt(categoryId, 10) : undefined;
+    return this.listingService.findAll(parsedCategoryId);
   }
 
   @Get(':id')
-  getOne(@Param('id', ParseIntPipe) id: number) {
-    return this.listingService.findOne(id);
+  getById(@Param('id', ParseIntPipe) id: number) {
+    return this.listingService.findById(id);
   }
 
   @UseGuards(JwtAuthGuard)

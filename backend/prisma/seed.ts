@@ -1,7 +1,9 @@
 import { PrismaClient, TrustLevel, ListingType, TransactionStatus } from '@prisma/client';
+import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 import * as argon2 from 'argon2';
 
-const prisma = new PrismaClient();
+const adapter = new PrismaMariaDb(process.env.DATABASE_URL);
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log('🌱 Seeding database...');
@@ -10,7 +12,56 @@ async function main() {
   console.log('Hashing passwords with argon2...');
   const hashedPassword = await argon2.hash('Password123!');
 
-  // 1. Create Users
+  // 1. Create Categories
+  console.log('Creating categories...');
+  
+  const catHomeMaintenance = await prisma.listingCategory.create({
+    data: { name: 'Home & Maintenance', slug: 'home-maintenance' },
+  });
+  
+  const catTutoringEducation = await prisma.listingCategory.create({
+    data: { name: 'Tutoring & Education', slug: 'tutoring-education' },
+  });
+  
+  const catITTechHelp = await prisma.listingCategory.create({
+    data: { name: 'IT & Tech Help', slug: 'it-tech-help' },
+  });
+  
+  const catErrandsDelivery = await prisma.listingCategory.create({
+    data: { name: 'Errands & Delivery', slug: 'errands-delivery' },
+  });
+  
+  const catChildcareBabysitting = await prisma.listingCategory.create({
+    data: { name: 'Childcare & Babysitting', slug: 'childcare-babysitting' },
+  });
+  
+  const catElderlyCare = await prisma.listingCategory.create({
+    data: { name: 'Elderly Care & Assistance', slug: 'elderly-care' },
+  });
+  
+  const catHealthWellness = await prisma.listingCategory.create({
+    data: { name: 'Health & Wellness', slug: 'health-wellness' },
+  });
+  
+  const catCreativeDesign = await prisma.listingCategory.create({
+    data: { name: 'Creative & Design', slug: 'creative-design' },
+  });
+  
+  const catEventsEntertainment = await prisma.listingCategory.create({
+    data: { name: 'Events & Entertainment', slug: 'events-entertainment' },
+  });
+  
+  const catVehiclesTransport = await prisma.listingCategory.create({
+    data: { name: 'Vehicles & Transport', slug: 'vehicles-transport' },
+  });
+  
+  const catMiscellaneous = await prisma.listingCategory.create({
+    data: { name: 'Miscellaneous', slug: 'miscellaneous' },
+  });
+
+  console.log(`✅ Created ${11} categories`);
+
+  // 2. Create Users
   console.log('Creating users...');
   
   const user1 = await prisma.user.create({
@@ -21,6 +72,7 @@ async function main() {
       trustLevel: TrustLevel.VETERAN,
       bio: 'Tapasztalt kereskedő, 5 éve aktív a platformon. Megbízható partner!',
       avatar: 'https://i.pravatar.cc/150?img=12',
+      balance: 15,
     },
   });
 
@@ -32,6 +84,7 @@ async function main() {
       trustLevel: TrustLevel.TRUSTED,
       bio: 'Szeretek segíteni másoknak. Kerékpár-specialista vagyok.',
       avatar: 'https://i.pravatar.cc/150?img=47',
+      balance: 12,
     },
   });
 
@@ -43,6 +96,7 @@ async function main() {
       trustLevel: TrustLevel.NEWCOMER,
       bio: 'Új vagyok itt, de lelkes! Várom a jó ajánlatokat.',
       avatar: 'https://i.pravatar.cc/150?img=33',
+      balance: 5,
     },
   });
 
@@ -54,6 +108,7 @@ async function main() {
       trustLevel: TrustLevel.TRUSTED,
       bio: 'Tanár vagyok, szívesen tanítok programozást kezdőknek.',
       avatar: 'https://i.pravatar.cc/150?img=20',
+      balance: 10,
     },
   });
 
@@ -65,12 +120,13 @@ async function main() {
       trustLevel: TrustLevel.NEWCOMER,
       bio: null, // Some users might not have a bio
       avatar: null, // Some users might not have an avatar
+      balance: 8,
     },
   });
 
   console.log(`✅ Created ${5} users (all passwords: Password123!)`);
 
-  // 2. Create Listings
+  // 3. Create Listings
   console.log('Creating listings...');
 
   // OFFER type listings
@@ -78,8 +134,10 @@ async function main() {
     data: {
       title: 'Használt Dell laptop eladó',
       description: 'Dell XPS 13 (2022), 2 éves, kiváló állapotban. Specifikációk: 16GB RAM, 512GB SSD, Intel i7-1165G7 processzor, Full HD kijelző. Eredeti doboz és töltő járnak hozzá. Ár: csere másik eszközre vagy ajánlatot várok.',
-      category: 'Elektronika',
+      categoryId: catITTechHelp.id,
       type: ListingType.OFFER,
+      pricePerHour: 5,
+      estimatedHours: 1,
       userId: user1.id,
     },
   });
@@ -88,8 +146,10 @@ async function main() {
     data: {
       title: 'Kerékpár javítás és szerelés',
       description: 'Profi kerékpár szerelés, javítás Budapesten. Hétvégén is elérhető. Kiszállás a XIII. kerületben ingyen, egyébként szállítási díj. Gumiabroncs csere, fék- és váltóbeállítás, lánc tisztítás és kenés.',
-      category: 'Szolgáltatás',
+      categoryId: catHomeMaintenance.id,
       type: ListingType.OFFER,
+      pricePerHour: 8,
+      estimatedHours: 2,
       userId: user2.id,
     },
   });
@@ -98,8 +158,10 @@ async function main() {
     data: {
       title: 'Bio házi lekvár',
       description: 'Házi készítésű baracklekvár és szilvalekvár. Bio alapanyagokból, cukormentesen készült (csak gyümölcsből). 500g-os befőttes üvegekben. Tartósítószer-mentes, természetes íz. Elcserélném más házi készítésű termékre.',
-      category: 'Élelmiszer',
+      categoryId: catMiscellaneous.id,
       type: ListingType.OFFER,
+      pricePerHour: 3,
+      estimatedHours: 1,
       userId: user1.id,
     },
   });
@@ -108,8 +170,10 @@ async function main() {
     data: {
       title: 'Python programozás oktatás',
       description: 'Egyéni Python és JavaScript oktatás kezdőknek és haladóknak. Online vagy személyesen Budapesten. Gyakorlatorientált tanítás, projektekkel. Első óra ingyenes konzultáció. Rugalmas időbeosztás.',
-      category: 'Oktatás',
+      categoryId: catTutoringEducation.id,
       type: ListingType.OFFER,
+      pricePerHour: 10,
+      estimatedHours: 2,
       userId: user4.id,
     },
   });
@@ -118,8 +182,10 @@ async function main() {
     data: {
       title: 'Antik könyvek gyűjteménye',
       description: 'Régi magyar és világirodalmi könyvek. 1920-1950 közötti kiadások. Jó állapotban megőrzött példányok: Petőfi, Arany János, József Attila művek. Eladó vagy elcserélném más régi könyvekre.',
-      category: 'Könyv',
+      categoryId: catMiscellaneous.id,
       type: ListingType.OFFER,
+      pricePerHour: 4,
+      estimatedHours: 1,
       userId: user2.id,
     },
   });
@@ -129,8 +195,10 @@ async function main() {
     data: {
       title: 'PlayStation 4 vagy Xbox One kerestetik',
       description: 'Használt PlayStation 4 vagy Xbox One konzolt keresek jó állapotban. Előnyben részesítem, ha kontrollerekkel és néhány játékkal együtt. Budapesten személyes átvétel. Fizetés készpénzben vagy csere másra.',
-      category: 'Elektronika',
+      categoryId: catITTechHelp.id,
       type: ListingType.REQUEST,
+      pricePerHour: 6,
+      estimatedHours: 1,
       userId: user3.id,
     },
   });
@@ -139,8 +207,10 @@ async function main() {
     data: {
       title: 'Költözködéshez segítség kell',
       description: 'Április 15-én, szombaton délután költözöm a XIII. kerületből a VI. kerületbe. Keresek 2-3 embert aki segít pakolásban és szállításban. Van saját teherautóm. Fizetés megbeszélés szerint vagy csere szolgáltatásra.',
-      category: 'Szolgáltatás',
+      categoryId: catErrandsDelivery.id,
       type: ListingType.REQUEST,
+      pricePerHour: 7,
+      estimatedHours: 4,
       userId: user5.id,
     },
   });
@@ -149,8 +219,10 @@ async function main() {
     data: {
       title: 'Angol magántanár kerestetik',
       description: 'Középhaladó szintű angol tudásom szeretném fejleszteni, különösen a beszédkészségemet. Heti 2 alkalommal, 1-1,5 órás foglalkozások. Online vagy személyesen Budapesten. Cserébe programozás oktatást tudok nyújtani.',
-      category: 'Oktatás',
+      categoryId: catTutoringEducation.id,
       type: ListingType.REQUEST,
+      pricePerHour: 9,
+      estimatedHours: 2,
       userId: user3.id,
     },
   });
@@ -159,8 +231,10 @@ async function main() {
     data: {
       title: 'Kerti szerszámok kölcsönkérése',
       description: 'Fűnyíró és sövényvágó kellene április közepére, 2-3 napra. Tavaszi nagytakarítás lesz a kertben. Budapesten élünk (XIV. kerület). Természetesen ügyelek rá és tisztán adom vissza. Kölcsönzési díjat vagy csereszolgáltatást tudok ajánlani.',
-      category: 'Kert',
+      categoryId: catHomeMaintenance.id,
       type: ListingType.REQUEST,
+      pricePerHour: 5,
+      estimatedHours: 3,
       userId: user5.id,
     },
   });
@@ -168,77 +242,100 @@ async function main() {
   const listing10 = await prisma.listing.create({
     data: {
       title: 'Baby sitter kerestetik',
-      description: '3 éves kislányomhoz keresek megbízható, tapasztalt baby sittert alkalmanként esténként (általában hétvégén). Budapesten, XIII. kerületben. Referenciát kérek. Óradíjas fizetés vagy esetleg csere más szolgáltatásra.',
-      category: 'Szolgáltatás',
+      description: '3 éves kislányomhoz keresek megbízható, tapasztalt baby sittert alkalmanként esténként (általában hékvégén). Budapesten, XIII. kerületben. Referenciát kérek. Óradíjas fizetés vagy esetleg csere más szolgáltatásra.',
+      categoryId: catChildcareBabysitting.id,
       type: ListingType.REQUEST,
+      pricePerHour: 8,
+      estimatedHours: 3,
       userId: user4.id,
     },
   });
 
   console.log(`✅ Created ${10} listings (${5} OFFER, ${5} REQUEST)`);
 
-  // 3. Create Transactions
+  // 4. Create Transactions
   console.log('Creating transactions...');
 
   const transaction1 = await prisma.transaction.create({
     data: {
-      userId: user3.id,
+      clientId: user3.id,
+      providerId: listing1.userId,
       listingId: listing1.id,
+      agreedHours: 2,
+      totalPrice: 100,
       status: TransactionStatus.COMPLETED,
     },
   });
 
   const transaction2 = await prisma.transaction.create({
     data: {
-      userId: user4.id,
+      clientId: user4.id,
+      providerId: listing2.userId,
       listingId: listing2.id,
+      agreedHours: 3,
+      totalPrice: 150,
       status: TransactionStatus.COMPLETED,
     },
   });
 
   const transaction3 = await prisma.transaction.create({
     data: {
-      userId: user5.id,
+      clientId: user5.id,
+      providerId: listing3.userId,
       listingId: listing3.id,
+      agreedHours: 4,
+      totalPrice: 200,
       status: TransactionStatus.COMPLETED,
     },
   });
 
   const transaction4 = await prisma.transaction.create({
     data: {
-      userId: user1.id,
+      clientId: user1.id,
+      providerId: listing6.userId,
       listingId: listing6.id,
+      agreedHours: 2,
+      totalPrice: 80,
       status: TransactionStatus.PENDING,
     },
   });
 
   const transaction5 = await prisma.transaction.create({
     data: {
-      userId: user2.id,
+      clientId: user2.id,
+      providerId: listing7.userId,
       listingId: listing7.id,
+      agreedHours: 5,
+      totalPrice: 250,
       status: TransactionStatus.COMPLETED,
     },
   });
 
   const transaction6 = await prisma.transaction.create({
     data: {
-      userId: user3.id,
+      clientId: user3.id,
+      providerId: listing4.userId,
       listingId: listing4.id,
+      agreedHours: 3,
+      totalPrice: 120,
       status: TransactionStatus.CANCELLED,
     },
   });
 
   const transaction7 = await prisma.transaction.create({
     data: {
-      userId: user4.id,
+      clientId: user4.id,
+      providerId: listing5.userId,
       listingId: listing5.id,
+      agreedHours: 2,
+      totalPrice: 90,
       status: TransactionStatus.PENDING,
     },
   });
 
   console.log(`✅ Created ${7} transactions`);
 
-  // 4. Create Reviews (only for COMPLETED transactions)
+  // 5. Create Reviews (only for COMPLETED transactions)
   console.log('Creating reviews...');
 
   await prisma.review.create({
@@ -283,6 +380,7 @@ async function main() {
   console.log('🎉 Seeding completed successfully!');
   console.log('');
   console.log('📊 Summary:');
+  console.log(`   - ${11} categories created`);
   console.log(`   - ${5} users created (with bio & avatar)`);
   console.log(`   - ${10} listings created (${5} OFFER, ${5} REQUEST)`);
   console.log(`   - ${7} transactions created`);

@@ -5,24 +5,24 @@ export declare class UserController {
     constructor(service: UserService);
     getMyProfile(req: any): Promise<{
         name: string;
+        id: number;
         email: string;
         bio: string;
         avatar: string;
-        id: number;
     }>;
     getUserProfileById(id: number): Promise<{
         name: string;
+        id: number;
         email: string;
         bio: string;
         avatar: string;
-        id: number;
     }>;
     patchMember(req: any, member: UpdateUserDTO): Promise<{
         name: string;
+        id: number;
         email: string;
         bio: string;
         avatar: string;
-        id: number;
     }>;
     getUserStatistics(id: number): Promise<{
         totalTransactions: number;
@@ -31,8 +31,15 @@ export declare class UserController {
         averageRating: number;
         transactions: {
             id: number;
-            userId: number;
+            agreedHours: number;
+            totalPrice: number;
             status: import(".prisma/client").$Enums.TransactionStatus;
+            createdAt: Date;
+            updatedAt: Date;
+            completedAt: Date | null;
+            cancelledAt: Date | null;
+            clientId: number;
+            providerId: number;
             listingId: number;
         }[];
         reviews: {

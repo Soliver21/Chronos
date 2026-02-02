@@ -201,7 +201,7 @@ Authorization: Bearer {{authToken}}
 
 ---
 
-### 8. Get User Profile by ID (Public)
+### 8. Get User Profile by ID (Public)      NEM JOOOOOOOOOOOOOOOOOOOOOOO
 
 **Method:** `GET`  
 **URL:** `{{baseUrl}}/users/{{userId}}`  
@@ -223,7 +223,7 @@ Authorization: Bearer {{authToken}}
 
 ---
 
-### 9. Get Non-Existent User
+### 9. Get Non-Existent User        NEM JOOOOOOOOOOOOOOOOOOOOOOOOOOO
 
 **Method:** `GET`  
 **URL:** `{{baseUrl}}/users/99999`  
@@ -466,6 +466,22 @@ After running the seed, this should return actual data:
 }
 ```
 ---
+### Categories
+**Method:** `GET`   `/api/categories→ [{ id: 1, name: "Home & Maintenance", slug: "home-maintenance" }, ...]`
+Create listing with category:
+**Method:** `POST`   `/api/listingsBody: { title, description, categoryId: 1, type: "OFFER", pricePerHour: 10, ... }`
+Filter listings by category:
+**Method:** `GET`   `/api/listings?categoryId=1→ returns only listings in that category`
+**Listing response includes category:**
+```json
+{  
+  "id": 1,
+  "title": "...",
+  "category": { "id": 1, "name": "Home & Maintenance", "slug": "home-maintenance" },  ...
+}
+```
+
+---
 
 ## ✅ Expected Test Results Summary
 
@@ -481,5 +497,232 @@ After running the seed, this should return actual data:
 | Duplicate Email | 409 | Conflict |
 | Invalid Email | 400 | Validation error |
 | No Auth Token | 401 | Protected route |
+
+---
+
+## 🏷️ Category Tests
+
+### 19. Get Categories List (Public)
+
+**Method:** `GET`  
+**URL:** `{{baseUrl}}/categories`  
+**Headers:**
+```
+(No headers required - public)
+```
+
+**Expected Response (200 OK):**
+```json
+[
+  { "id": 1, "name": "Home & Maintenance", "slug": "home-maintenance" },
+  { "id": 2, "name": "Gardening", "slug": "gardening" }
+]
+```
+
+---
+
+### 20. Get Category Included in Listing (Integration)
+
+Create a listing using a valid `categoryId` and verify the returned listing includes `category` information.
+
+**Method:** `POST`  
+**URL:** `{{baseUrl}}/listings`  
+**Headers:**
+```
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+```
+
+**Body (JSON):**
+```json
+{
+  "title": "Lawn mowing",
+  "description": "Mow my lawn",
+  "categoryId": 1,
+  "type": "OFFER",
+  "pricePerHour": 15
+}
+```
+
+**Expected Response (201 Created):**
+```json
+{
+  "id": 42,
+  "title": "Lawn mowing",
+  "category": { "id": 1, "name": "Home & Maintenance", "slug": "home-maintenance" },
+  "pricePerHour": 15,
+  "type": "OFFER",
+  ...
+}
+```
+
+---
+
+## 💱 Transaction Tests
+
+> These use the `transactions` endpoints and assume one user acts as provider (created listing) and another as client.
+
+### 21. Create Transaction (Client)
+
+**Method:** `POST`  
+**URL:** `{{baseUrl}}/transactions`  
+**Headers:**
+```
+Authorization: Bearer {{authToken}}  (client)
+Content-Type: application/json
+```
+
+**Body (JSON):**
+```json
+{
+  "listingId": "42",
+  "agreedHours": 2
+}
+```
+
+**Expected Response (201 Created):**
+```json
+{
+  "id": 100,
+  "listing": { "id": 42, "title": "Lawn mowing", ... },
+  "client": { "id": 2, "name": "Client" },
+  "provider": { "id": 1, "name": "Provider" },
+  "agreedHours": 2,
+  "totalPrice": 30,
+  "status": "PENDING"
+}
+```
+
+---
+
+### 22. Get Transaction By ID (Authenticated)
+
+**Method:** `GET`  
+**URL:** `{{baseUrl}}/transactions/100`  
+**Headers:**
+```
+Authorization: Bearer {{authToken}}  (either client or provider)
+```
+
+**Expected Response (200 OK):**
+```json
+{ "id": 100, "status": "PENDING", "totalPrice": 30, "listing": {...}, "client": {...}, "provider": {...} }
+```
+
+---
+
+### 23. Complete Transaction (Client completes)
+
+**Method:** `POST`  
+**URL:** `{{baseUrl}}/transactions/100/complete`  
+**Headers:**
+```
+Authorization: Bearer {{authToken}}  (client)
+```
+
+**Expected Response (200 OK):**
+```json
+{ "id": 100, "status": "COMPLETED", "completedAt": "2026-02-02T12:00:00.000Z", ... }
+```
+
+**Negative cases:**
+- Completing as a non-client => 403 Forbidden
+- Completing a non-pending tx => 400 Bad Request
+
+---
+
+### 24. Cancel Transaction
+
+**Method:** `POST`  
+**URL:** `{{baseUrl}}/transactions/101/cancel`  
+**Headers:**
+```
+Authorization: Bearer {{authToken}}  (client or provider)
+```
+
+**Expected Response (200 OK):**
+```json
+{ "id": 101, "status": "CANCELLED", "cancelledAt": "2026-02-02T12:05:00.000Z", ... }
+```
+
+**Negative cases:**
+- Unauthorized user cancels => 403 Forbidden
+- Cancelling non-pending tx => 400 Bad Request
+
+---
+
+## 📤 Upload Tests
+
+> Use `multipart/form-data` with field name `file`. Test both the general upload and avatar upload which updates the user.
+
+### 25. Upload File (Authenticated)
+
+**Method:** `POST`  
+**URL:** `{{baseUrl}}/upload`  
+**Headers:**
+```
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data
+```
+
+**Form data:** `file` = (image file, e.g., `image.png`)
+
+**Expected Response (200 OK):**
+```json
+{
+  "url": "/uploads/167xxxxxxx-image.png",
+  "absoluteUrl": "http://localhost:3001/uploads/167xxxxxxx-image.png"
+}
+```
+
+**Negative cases:**
+- Missing `file` => 400 Bad Request with { "message": "No file provided" }
+- Non-image file (e.g., `text/plain`) => 400 Bad Request with { "message": "Only image files are allowed" }
+
+---
+
+### 26. Upload Avatar (Authenticated)
+
+**Method:** `POST`  
+**URL:** `{{baseUrl}}/upload/avatar`  
+**Headers:**
+```
+Authorization: Bearer {{authToken}}
+Content-Type: multipart/form-data
+```
+
+**Form data:** `file` = (image file)
+
+**Expected Response (200 OK):**
+```json
+{
+  "url": "/uploads/167xxxxxxx-avatar.png",
+  "absoluteUrl": "http://localhost:3001/uploads/167xxxxxxx-avatar.png",
+  "user": { "id": 2, "avatar": "/uploads/167xxxxxxx-avatar.png", ... }
+}
+```
+
+---
+
+## 🧾 Tips for running upload tests (curl / Postman)
+
+- curl example (upload):
+```
+curl -X POST "{{baseUrl}}/upload" -H "Authorization: Bearer $TOKEN" -F "file=@/path/to/image.png"
+```
+- Postman: set body to `form-data`, add key `file` (type File) and attach the file.
+
+---
+
+## ✅ Extended Test Results Summary (additions)
+
+| Test | Status | Description |
+|------|--------|-------------|
+| Get Categories | 200 | Returns category list |
+| Create Transaction | 201 | Creates pending transaction when client has sufficient balance |
+| Complete Transaction | 200 | Marks tx completed, transfers funds to provider |
+| Cancel Transaction | 200 | Cancels pending tx and refunds client |
+| Upload File | 200 | Saves file and returns URL |
+| Upload Avatar | 200 | Saves file, updates user's avatar |
 
 ---

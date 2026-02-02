@@ -7,17 +7,24 @@ import { UpdateListingDto } from './dto/update-listing.dto';
 export class ListingService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findMany() {
+  async findAll(categoryId?: number) {
     return this.prisma.listing.findMany({
+      where: categoryId ? { categoryId } : undefined,
       orderBy: { id: 'desc' },
-      include: { user: { select: { id: true, name: true, avatar: true } } },
+      include: {
+        user: { select: { id: true, name: true, avatar: true } },
+        category: { select: { id: true, name: true, slug: true } },
+      },
     });
   }
 
-  async findOne(id: number) {
+  async findById(id: number) {
     const listing = await this.prisma.listing.findUnique({
       where: { id },
-      include: { user: { select: { id: true, name: true, avatar: true } } },
+      include: {
+        user: { select: { id: true, name: true, avatar: true } },
+        category: { select: { id: true, name: true, slug: true } },
+      },
     });
     if (!listing) throw new NotFoundException('Listing not found');
     return listing;
@@ -26,22 +33,28 @@ export class ListingService {
   async create(userId: number, dto: CreateListingDto) {
     return this.prisma.listing.create({
       data: { ...dto, userId },
-      include: { user: { select: { id: true, name: true, avatar: true } } },
+      include: {
+        user: { select: { id: true, name: true, avatar: true } },
+        category: { select: { id: true, name: true, slug: true } },
+      },
     });
   }
 
   async update(id: number, userId: number, dto: UpdateListingDto) {
-    const listing = await this.findOne(id);
+    const listing = await this.findById(id);
     if (listing.userId !== userId) throw new NotFoundException('Listing not found');
     return this.prisma.listing.update({
       where: { id },
       data: dto,
-      include: { user: { select: { id: true, name: true, avatar: true } } },
+      include: {
+        user: { select: { id: true, name: true, avatar: true } },
+        category: { select: { id: true, name: true, slug: true } },
+      },
     });
   }
 
   async remove(id: number, userId: number) {
-    const listing = await this.findOne(id);
+    const listing = await this.findById(id);
     if (listing.userId !== userId) throw new NotFoundException('Listing not found');
     return this.prisma.listing.delete({ where: { id } });
   }
