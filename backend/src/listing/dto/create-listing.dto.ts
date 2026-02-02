@@ -1,4 +1,4 @@
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsOptional, IsString, IsNumber, Min, Max, IsInt } from 'class-validator';
 import { ListingType } from '@prisma/client';
 
 export class CreateListingDto {
@@ -8,11 +8,22 @@ export class CreateListingDto {
   @IsString()
   description: string;
 
-  @IsString()
-  category: string;
+  @IsInt()
+  categoryId: number;
 
   @IsEnum(ListingType)
   type: ListingType;
+
+  @IsNumber()
+  @Min(1)
+  @Max(10)
+  pricePerHour: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(6)
+  estimatedHours?: number;
 
   @IsOptional()
   @IsString()

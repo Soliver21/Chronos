@@ -32,13 +32,15 @@ let UserService = class UserService {
         });
     }
     async getUserStatistics(id) {
-        const [transactions, reviews] = await Promise.all([
-            this.prisma.transaction.findMany({ where: { userId: id } }),
+        const [clientTransactions, providerTransactions, reviews] = await Promise.all([
+            this.prisma.transaction.findMany({ where: { clientId: id } }),
+            this.prisma.transaction.findMany({ where: { providerId: id } }),
             this.prisma.review.findMany({ where: { userId: id } }),
         ]);
+        const transactions = [...clientTransactions, ...providerTransactions];
         const totalTransactions = transactions.length;
         const totalReviews = reviews.length;
-        const totalAmount = transactions.reduce((sum, t) => sum + (t.amount ?? 0), 0);
+        const totalAmount = transactions.reduce((sum, t) => sum + (t.totalPrice ?? 0), 0);
         const averageRating = totalReviews === 0
             ? null
             : Number((reviews.reduce((sum, r) => sum + (r.rating ?? 0), 0) / totalReviews).toFixed(2));
