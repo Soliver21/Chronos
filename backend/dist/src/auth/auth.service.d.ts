@@ -9,18 +9,18 @@ export declare class AuthService {
     authRegister(user: RegisterUserDto): Promise<{
         user: {
             name: string;
+            id: number;
             email: string;
             trustLevel: import(".prisma/client").$Enums.TrustLevel;
-            id: number;
         };
         accessToken: string;
     }>;
     authLogin(user: LoginUserDto): Promise<{
         user: {
             name: string;
+            id: number;
             email: string;
             trustLevel: import(".prisma/client").$Enums.TrustLevel;
-            id: number;
         };
         accessToken: string;
     }>;
