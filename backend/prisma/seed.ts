@@ -2,7 +2,9 @@ import { PrismaClient, TrustLevel, ListingType, TransactionStatus } from '@prism
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 import * as argon2 from 'argon2';
 
-const adapter = new PrismaMariaDb(process.env.DATABASE_URL);
+const databaseUrl = process.env.DATABASE_URL || 'mysql://root:root@mysql:3306/chronos';
+
+const adapter = new PrismaMariaDb(databaseUrl);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
