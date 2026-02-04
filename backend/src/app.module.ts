@@ -11,6 +11,7 @@ import { UploadModule } from './upload/upload.module';
 import { ListingModule } from './listing/listing.module';
 import { CategoryModule } from './category/category.module';
 import { TransactionModule } from './transaction/transaction.module';
+import { ReviewModule } from './review/review.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { TransactionModule } from './transaction/transaction.module';
     ListingModule,
     CategoryModule,
     TransactionModule,
+    ReviewModule,
   ],
   controllers: [AppController],
   providers: [
