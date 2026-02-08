@@ -20,9 +20,14 @@ export class ReviewController {
     }
 
     @Public()
-    @Get("service/latest/:limit?")
-    async getServiceReviews(@Param("limit") limit?: string) {
-        const parsedLimit = limit ? parseInt(limit, 10) : 10;
-        return await this.service.getServiceReviews(parsedLimit);
+    @Get("service/latest/:limit")
+    async getServiceReviewsWithLimit(@Param("limit", ParseIntPipe) limit: number) {
+        return await this.service.getServiceReviews(limit);
+    }
+
+    @Public()
+    @Get("service/latest")
+    async getServiceReviews() {
+        return await this.service.getServiceReviews(10);
     }
 }
