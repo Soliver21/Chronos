@@ -1,4 +1,5 @@
 import React, { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { Button } from "../ui/button";
 import {
@@ -28,11 +29,10 @@ export function LoginForm() {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
   }
-
+  const navigate = useNavigate()
  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
 
-  // Egyszerűbb check
   if (!form.email) {
     alert("Kérjük, töltse ki az email mezőt!");
     return emailRef.current?.focus();
@@ -46,6 +46,7 @@ export function LoginForm() {
   try {
     const res = await loginUser(form);
     console.log("Sikeres belépés:", res);
+    navigate("/dashboard");
     setForm(init); 
   } catch (error) {
     console.error("Hiba:", error);
