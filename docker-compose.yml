@@ -20,6 +20,7 @@ services:
   backend:
     build:
       context: ./backend
+      dockerfile: Dockerfile
     container_name: chronos_backend
     command: >
       sh -c "
@@ -35,6 +36,7 @@ services:
       - ./backend/.env
     volumes:
       - ./backend:/app
+      - /app/node_modules
     depends_on:
       mysql:
         condition: service_healthy
@@ -43,12 +45,14 @@ services:
   frontend:
     build:
       context: ./frontend
+      dockerfile: Dockerfile
     container_name: chronos_frontend
     command: sh -c "npm install && npm run dev"
     ports:
       - "5301:5300"
     volumes:
       - ./frontend:/app
+      - /app/node_modules
     depends_on:
       - backend
 

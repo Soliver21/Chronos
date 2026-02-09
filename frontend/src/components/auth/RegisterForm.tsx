@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Link } from "react-router-dom";
 import { Button } from "../ui/button";
+import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -30,7 +31,7 @@ const RegisterComp = () => {
         const { name, value } = e.target;
         setForm(prev => ({...prev, [name]: value}));
     }
-
+    const navigate = useNavigate()
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         
@@ -52,6 +53,7 @@ const RegisterComp = () => {
             setForm(init);
             console.log("Sikeres regisztráció:", res);
             alert("Sikeres regisztráció!");
+             navigate("/dashboard");
         } catch(error) {
             console.error("Hiba a kérésnél:", error);
             alert("Hiba történt a regisztráció során.");
