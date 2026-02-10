@@ -29,7 +29,7 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
 
-  SwaggerModule.setup('docs', app, document); // http://localhost:3000/docs
+  SwaggerModule.setup('docs', app, document); // http://localhost:3001/docs
 
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
     prefix: '/uploads',

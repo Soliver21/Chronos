@@ -1,5 +1,5 @@
-import { IsEnum, IsOptional, IsString, IsNumber, Min, Max, IsInt } from 'class-validator';
-import { ListingType } from '@prisma/client';
+import { IsEnum, IsOptional, IsString, IsNumber, Min, Max, IsInt } from "class-validator";
+import { ListingType } from "@prisma/client";
 
 export class CreateListingDto {
   @IsString()

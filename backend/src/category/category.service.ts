@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
 export class CategoryService {
@@ -7,7 +7,7 @@ export class CategoryService {
 
   async findAll() {
     return this.prisma.listingCategory.findMany({
-      orderBy: { name: 'asc' },
+      orderBy: { name: "asc" },
       select: { id: true, name: true, slug: true },
     });
   }

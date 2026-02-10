@@ -1,9 +1,9 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import * as argon2 from 'argon2';
-import { JwtService } from '@nestjs/jwt';
-import { RegisterUserDto } from './dto/register.dto';
-import { LoginUserDto } from './dto/login.dto';
+import { ConflictException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import * as argon2 from "argon2";
+import { JwtService } from "@nestjs/jwt";
+import { RegisterUserDto } from "./dto/register.dto";
+import { LoginUserDto } from "./dto/login.dto";
 
 @Injectable()
 export class AuthService {
@@ -19,7 +19,7 @@ export class AuthService {
         });
 
         if (exists) {
-            throw new ConflictException('Email already in use');
+            throw new ConflictException("Email already in use");
         }
 
         const hashedPasswd = await argon2.hash(user.password);
@@ -30,7 +30,7 @@ export class AuthService {
                 email: user.email,
                 name: user.name,
                 password: hashedPasswd,
-                trustLevel: 'NEWCOMER',
+                trustLevel: "NEWCOMER",
             },
             select: {
                 id: true,
@@ -65,13 +65,13 @@ export class AuthService {
         });
 
         if (!loginUser) {
-            throw new UnauthorizedException('Invalid email or password');
+            throw new UnauthorizedException("Invalid email or password");
         }
 
         const passwordValid = await argon2.verify(loginUser.password, user.password);
         
         if (!passwordValid) {
-            throw new UnauthorizedException('Invalid email or password');
+            throw new UnauthorizedException("Invalid email or password");
         }
 
         const { password, ...userWithoutPassword } = loginUser;
