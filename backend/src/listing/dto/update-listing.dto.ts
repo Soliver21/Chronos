@@ -1,5 +1,5 @@
-import { IsEnum, IsOptional, IsString, IsNumber, Min, Max, IsInt } from 'class-validator';
-import { ListingType, TransactionStatus } from '@prisma/client';
+import { IsEnum, IsOptional, IsString, IsNumber, Min, Max, IsInt } from "class-validator";
+import { ListingType, TransactionStatus } from "@prisma/client";
 
 
 export class UpdateListingDto {
