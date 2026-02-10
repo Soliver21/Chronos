@@ -1,7 +1,6 @@
 import React, { useRef, useState } from 'react';
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "../ui/button";
-import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -12,8 +11,9 @@ import {
 } from "../ui/card";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import type { RegisterType } from '../../types/user.types';
 import { registUser } from '../../services/auth.service';
+import { useAuth } from "../../context/AuthContext";
+import type { RegisterType } from '../../types/user.types';
 
 const init: RegisterType = {
     name: "",
@@ -23,6 +23,9 @@ const init: RegisterType = {
 
 const RegisterComp = () => {
     const [form, setForm] = useState<RegisterType>(init);
+    const { login } = useAuth();
+    const navigate = useNavigate();
+    
     const nameRef = useRef<HTMLInputElement>(null);
     const emailRef = useRef<HTMLInputElement>(null);
     const passwdRef = useRef<HTMLInputElement>(null);
@@ -31,37 +34,27 @@ const RegisterComp = () => {
         const { name, value } = e.target;
         setForm(prev => ({...prev, [name]: value}));
     }
-    const navigate = useNavigate()
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         
-        if (!form.name) {
-            nameRef.current?.focus();
-            return alert("Kérjük, adja meg a nevét!");
-        }
-        if (!form.email) {
-            emailRef.current?.focus();
-            return alert("Kérjük, adja meg az email címét!");
-        }
-        if (!form.password) {
-            passwdRef.current?.focus();
-            return alert("Kérjük, adjon meg egy jelszót!");
-        }
+        if (!form.name) return nameRef.current?.focus();
+        if (!form.email) return emailRef.current?.focus();
+        if (!form.password) return passwdRef.current?.focus();
 
         try {
             const res = await registUser(form);
+            login(res.user, res.token);
             setForm(init);
-            console.log("Sikeres regisztráció:", res);
-            alert("Sikeres regisztráció!");
-             navigate("/dashboard");
+            navigate("/dashboard");
         } catch(error) {
-            console.error("Hiba a kérésnél:", error);
+            console.error(error);
             alert("Hiba történt a regisztráció során.");
         }
     }
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-4">
+    <div className="flex items-center justify-center min-h-screen p-10">
       <Card className="w-full max-w-sm">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">Fiók létrehozása</CardTitle>
@@ -71,7 +64,7 @@ const RegisterComp = () => {
         </CardHeader>
         
         <form onSubmit={handleSubmit}>
-          <CardContent className="grid gap-4 p-6">
+          <CardContent className="grid gap-4 p-10">
             <div className="grid gap-2">
               <Label htmlFor="name">Név</Label>
               <Input 
@@ -105,6 +98,7 @@ const RegisterComp = () => {
                 ref={passwdRef}
                 value={form.password}
                 onChange={handleChange}
+                placeholder="********" 
               />
             </div>
           </CardContent>
