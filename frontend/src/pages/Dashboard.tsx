@@ -1,4 +1,5 @@
-import Navbar from "../components/dashboard/Navbar"
+import Navbar from "../components/dashboard/Dashbar"
+import "./Dashboard.css"
 
 const Dashboard = () => {
   return (
