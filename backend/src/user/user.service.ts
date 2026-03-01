@@ -8,25 +8,65 @@ export class UserService {
 
     async findById(id: number) {
         const user = await this.prisma.user.findUnique({
-            where: { id }, select: { id: true, name: true, email: true, bio: true, avatar: true },
+            where: { id },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                bio: true,
+                avatar: true,
+                balance: true,        // ← HOZZÁADVA
+                trustLevel: true,     // ← HOZZÁADVA
+                averageRating: true,  // ← HOZZÁADVA
+            },
         });
         if (!user) throw new NotFoundException(`User not found`);
         return user;
     }
 
-    async updateUser(id:number, user:UpdateUserDTO){
+    async updateUser(id: number, user: UpdateUserDTO) {
         return await this.prisma.user.update({
-            where: {id},
+            where: { id },
             data: user,
-            select: { id: true, name: true, email: true, bio: true, avatar: true },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                bio: true,
+                avatar: true,
+                balance: true,
+                trustLevel: true,
+                averageRating: true,
+            },
         });
     }
 
     async getUserStatistics(id: number) {
         const [clientTransactions, providerTransactions, reviews] = await Promise.all([
-            this.prisma.transaction.findMany({ where: { clientId: id } }),
-            this.prisma.transaction.findMany({ where: { providerId: id } }),
-            this.prisma.review.findMany({ where: { userId: id } }),
+            this.prisma.transaction.findMany({
+                where: { clientId: id },
+                include: {
+                    listing: { select: { id: true, title: true, pricePerHour: true } },
+                    client: { select: { id: true, name: true, avatar: true } },
+                    provider: { select: { id: true, name: true, avatar: true } },
+                },
+                orderBy: { createdAt: "desc" },
+            }),
+            this.prisma.transaction.findMany({
+                where: { providerId: id },
+                include: {
+                    listing: { select: { id: true, title: true, pricePerHour: true } },
+                    client: { select: { id: true, name: true, avatar: true } },
+                    provider: { select: { id: true, name: true, avatar: true } },
+                },
+                orderBy: { createdAt: "desc" },
+            }),
+            this.prisma.review.findMany({
+                where: { userId: id },
+                include: {
+                    user: { select: { id: true, name: true, avatar: true } },
+                },
+            }),
         ]);
 
         const transactions = [...clientTransactions, ...providerTransactions];
@@ -38,7 +78,12 @@ export class UserService {
         const averageRating =
             totalReviews === 0
                 ? null
-                : Number((reviews.reduce((sum: number, r: any) => sum + (r.rating ?? 0), 0) / totalReviews).toFixed(2));
+                : Number(
+                    (
+                        reviews.reduce((sum: number, r: any) => sum + (r.rating ?? 0), 0) /
+                        totalReviews
+                    ).toFixed(2)
+                );
 
         return {
             totalTransactions,
