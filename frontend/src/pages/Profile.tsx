@@ -262,7 +262,7 @@ const Profile = () => {
                     <Card key={tx.id} className="bg-[#0f0f14] border-white/10">
                       <CardContent className="p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
-                          <p className="font-bold text-white">{tx.listing?.title ?? `Hirdetés #${tx.listingId}`}</p>
+                          <p className="font-bold text-white">{tx.listing?.title ?? `Hirdetés #${tx.id}`}</p>
                           <p className="text-xs text-gray-500 mt-1">
                             {tx.client?.name} → {tx.provider?.name}
                           </p>

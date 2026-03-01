@@ -21,3 +21,13 @@ export interface Listing {
     userId: number;
     user?: Pick<User, 'id' | 'name' | 'avatar'>;
 }
+
+// filters currently map to query params accepted by the backend; extra
+// fields are mostly for future use but convenient on the frontend.
+export interface ListingFilter {
+    category?: string | number;
+    type?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    search?: string;
+}

@@ -1,28 +1,30 @@
-import type{ Listing } from "./listing.types";
-import type{ User } from './user.types';
+// Transaction-related types used by profile and transaction pages
+export interface TransactionUser {
+  id: number;
+  name: string;
+  avatar?: string | null;
+  email?: string;
+}
 
-export type TransactionStatus = 'PENDING' | 'COMPLETED' | 'CANCELLED';
+export interface TransactionListing {
+  id: number;
+  title: string;
+  description: string;
+  pricePerHour: number;
+  imageUrl?: string | null;
+  type: "OFFER" | "REQUEST";
+}
 
-
-//Megértés kéne
 export interface Transaction {
-    id: number;
-    clientId: number;
-    providerId: number;
-    listingId: number;
-    agreedHours: number;
-    totalPrice: number;
-    status: TransactionStatus;
-    createdAt: string;
-    updatedAt: string;
-    completedAt?: string | null;
-    cancelledAt?: string | null;
-    client?: Pick<User, 'id' | 'name' | 'avatar'>;
-    provider?: Pick<User, 'id' | 'name' | 'avatar'>;
-    listing?: Listing;
-    review?: {
-        id: number;
-        rating: number;
-        comment?: string | null;
-    } | null;
+  id: number;
+  client: TransactionUser;
+  provider: TransactionUser;
+  listing: TransactionListing;
+  agreedHours: number;
+  totalPrice: number;
+  status: "PENDING" | "COMPLETED" | "CANCELLED";
+  createdAt: string;
+  updatedAt: string;
+  completedAt?: string | null;
+  cancelledAt?: string | null;
 }

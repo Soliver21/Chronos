@@ -1,9 +1,14 @@
 import { api } from "./api";
 import type { Listing } from "../types/listing.types";
 
-export const getListings = async (categoryId?: number): Promise<Listing[]> => {
+import type { ListingFilter } from "../types/listing.types";
+
+export const getListings = async (filters: ListingFilter = {}): Promise<Listing[]> => {
+    // the backend currently only cares about categoryId but passing the whole
+    // object lets us easily extend the API later and keeps the frontend code
+    // consistent with the filter form.
     const res = await api.get("/listings", {
-        params: categoryId ? { categoryId } : undefined,
+        params: filters,
     });
     return res.data;
 };
