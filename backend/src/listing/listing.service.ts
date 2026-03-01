@@ -30,6 +30,18 @@ export class ListingService {
     return listing;
   }
 
+  // ← HOZZÁADVA: saját hirdetések userId alapján
+  async findByUserId(userId: number) {
+    return this.prisma.listing.findMany({
+      where: { userId },
+      orderBy: { id: "desc" },
+      include: {
+        user: { select: { id: true, name: true, avatar: true } },
+        category: { select: { id: true, name: true, slug: true } },
+      },
+    });
+  }
+
   async create(userId: number, dto: CreateListingDto) {
     return this.prisma.listing.create({
       data: { ...dto, userId },

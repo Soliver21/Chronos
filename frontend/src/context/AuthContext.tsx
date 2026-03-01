@@ -1,82 +1,87 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { api } from "../services/api";
 
-//interface auth context típusához definiáljuk a típust, hogy milyen értékeket és függvényeket tartalmaz majd a context.
-
+// interface auth context típusához definiáljuk a típust, hogy milyen értékeket és függvényeket tartalmaz majd a context.
 interface AuthContextType {
   user: any | null;
   token: string | null;
   login: (userData: any, token: string) => void;
   logout: () => void;
   isAuthenticated: boolean;
+  loading: boolean;
 }
 
-// Létrehozzuk az AuthContext-et, amely a fenti típusú értékeket fogja !!!!tartalmazni!!!!. Kezdetben undefined-ként inicializáljuk, hogy jelezzük, hogy még nincs érték hozzárendelve.
+// Létrehozzuk az AuthContext-et, amely a fenti típusú értékeket fogja tartalmazni.
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-//Hookok
-  const [user, setUser] = useState<any | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  useEffect(() => {
+  // Hookok a felhasználó és a token tárolására
+  
+  // JAVÍTÁS: A useState-en BELÜL azonnal kiolvassuk a localStorage-ot. 
+  // Így az oldal frissítésekor (F5) nem lesz "üres" pillanat, a React egyből tudja, ki vagy.
+  const [user, setUser] = useState<any | null>(() => {
     const savedUser = localStorage.getItem("user");
-    const savedToken = localStorage.getItem("token");
-    if (savedUser && savedToken) {
-      setUser(JSON.parse(savedUser));
-      setToken(savedToken);
-    }
-  }, []);
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
 
-  // Ez a függvény elmenti a felhasználói adatokat és a token-t a localStorage-be, valamint frissíti a state-et is.
+  const [token, setToken] = useState<string | null>(() => {
+    const savedToken = localStorage.getItem("token");
+    // Ha van mentett token, azonnal rákötjük az axios-ra (api), 
+    // hogy a hívások (pl. profil adatok) ne dobjanak hibát.
+    if (savedToken) {
+      api.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
+    }
+    return savedToken;
+  });
+
+  const [loading, setLoading] = useState(false);
+
+  // Ez a függvény elmenti a felhasználói adatokat és a token-t a localStorage-be, 
+  // frissíti a state-et, és beállítja az API globális fejlécét.
   const login = (userData: any, token: string) => {
     localStorage.setItem("user", JSON.stringify(userData));
     localStorage.setItem("token", token);
+    
+    // API fejléc beállítása a bejelentkezés pillanatában
+    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    
     setUser(userData);
     setToken(token);
   };
-  // Ez a függvény eltávolítja! a felhasználói adatokat és a token-t a localStorage-ből, valamint törli a state-et is, ezzel kijelentkeztetve (logout gombhoz majd) a felhasználót.
+
+  // Ez a függvény eltávolítja a felhasználói adatokat és a token-t a localStorage-ből, 
+  // törli a state-et és az API fejlécet, majd átirányít a login oldalra.
   const logout = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
+    
+    // API fejléc törlése
+    delete api.defaults.headers.common["Authorization"];
+    
     setUser(null);
     setToken(null);
     window.location.href = "/login";
   };
 
-  //Lásd main.tsx-ben, hogy a AuthProvider körbeveszi az App-et, így minden komponens, ami az App-ben van, hozzáférhet a context értékeihez kvázi globális.
+  // Lásd main.tsx-ben: az AuthProvider körbeveszi az App-et, 
+  // így minden komponens hozzáférhet ezekhez a globális értékekhez.
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token }}>
+    <AuthContext.Provider value={{ 
+        user, 
+        token, 
+        login, 
+        logout, 
+        isAuthenticated: !!token,
+        loading 
+    }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Saját hook, hogy könnyen hozzáférhessünk a context értékeihez a komponenseinkben. Ellenőrzi, hogy a context nem undefined-e, és ha igen, akkor hibát dob, jelezve, hogy a useAuth csak AuthProvider-en belül használható.
+// Saját hook a context használatához. Ellenőrzi, hogy a provider-en belül vagyunk-e.
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) throw new Error("useAuth must be used within AuthProvider");
   return context;
 };
-
-/* Magyarázat a createContext/useContext és a provider objektum metódushoz példával  
-1. LÉPÉS: Létrehozzuk a csatornát (fájl: UserContext.ts)
-export const UserContext = createContext<string>("Vendég");
-
-2. LÉPÉS: Sugárzunk (fájl: App.tsx)
-function App() {
-  return (
-    <UserContext.Provider value="Gyetvai Ádám">
-      <Layout />  (A Layout nem is tudja, mi az a UserContext, csak átengedi)
-    </UserContext.Provider>
-  );
-}
-
-3. LÉPÉS: Vesszük az adást (fájl: ProfileCard.tsx)
-function ProfileCard() {
- VIZUÁLISAN: Benyúlunk a "térbe" és kihalásszuk a UserContext értékét.
- Nincs szükség props-ra!
-  
-  const userName = useContext(UserContext); 
-
-  return <h1>Üdv, {userName}!</h1>;
-} 
- */

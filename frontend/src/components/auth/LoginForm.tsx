@@ -3,11 +3,12 @@ import { useNavigate, Link } from "react-router-dom";
 import { Button } from "../ui/button";
 import {
   Card,
+  CardAction,
+  CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-  CardAction
 } from "../ui/card";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -34,7 +35,6 @@ export function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     if (!form.email) return emailRef.current?.focus();
     if (!form.password) return passwordRef.current?.focus();
 
@@ -53,42 +53,40 @@ export function LoginForm() {
     <div className="landing-page">
       <div className="gradient-bg"></div>
       
-      <div className="flex items-center justify-center min-h-screen relative z-10">
-        <Card className="w-full max-w-sm bg-white text-black shadow-2xl">
-          <CardHeader className="pb-2">
-            <CardTitle>Login to your account</CardTitle>
-            <CardDescription>
-              Enter your email below to login to your account
+      <div className="flex items-center justify-center min-h-screen relative z-10 px-4 text-black">
+        <Card className="w-full max-w-sm bg-white border-none shadow-2xl relative">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold">Bejelentkezés</CardTitle>
+            <CardDescription className="text-gray-500">
+              A belépéshez add meg az e-mail-címedet.
             </CardDescription>
             <CardAction>
-              <Button variant="link" asChild className="p-0">
-                <Link to="/register" className="text-xs font-bold">Sign Up</Link>
-              </Button>
+              <Link to="/register" className="text-sm font-bold hover:underline">
+               Regisztrálj most!
+              </Link>
             </CardAction>
           </CardHeader>
           
           <form onSubmit={handleSubmit}>
-            <div className="px-6 py-8 flex flex-col gap-6"> 
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
+            <CardContent className="grid gap-6"> 
+              <div className="grid gap-2 text-left">
+                <Label htmlFor="email" className="font-semibold text-gray-700">Email</Label>
                 <Input
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="m@example.com"
+                  placeholder="pelda@gmail.com"
                   ref={emailRef}
                   value={form.email}
                   onChange={handleChange}
+                  className="bg-white border-gray-300 focus:ring-2 focus:ring-blue-500 h-11"
                 />
               </div>
-              <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                  <Link
-                    to="/forgot-password"
-                    className="ml-auto inline-block text-xs underline underline-offset-4"
-                  >
-                    Forgot your password?
+              <div className="grid gap-2 text-left">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password" className="font-semibold text-gray-700">Password</Label>
+                  <Link to="/forgot-password" className="text-xs text-blue-600 hover:underline">
+                    Elfelejtetted a jelszavad?
                   </Link>
                 </div>
                 <Input 
@@ -99,17 +97,18 @@ export function LoginForm() {
                   ref={passwordRef}
                   value={form.password}
                   onChange={handleChange}
+                  className="bg-white border-gray-300 focus:ring-2 mb-5 focus:ring-blue-500 h-11"
                 />
               </div>
-            </div>
+            </CardContent>
             
-            <CardFooter className="flex-col gap-2 pb-6">
-              <Button type="submit" className="w-full bg-slate-900 text-white hover:bg-slate-800">
-                Login
+            <CardFooter className="flex-col gap-4">
+              <Button type="submit" className="w-full bg-slate-900 hover:bg-slate-800 text-white h-11 font-bold">
+                Bejelentkezem
               </Button>
-              <Button variant="ghost" className="w-full text-xs" asChild>
-                <Link to="/">← Back to home</Link>
-              </Button>
+              <Link to="/" className="text-xs text-gray-400 hover:text-gray-600">
+                ← Vissza a főoldalra
+              </Link>
             </CardFooter>
           </form>
         </Card>
