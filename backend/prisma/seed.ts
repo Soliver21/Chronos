@@ -1,4 +1,4 @@
-import { PrismaClient, TrustLevel, ListingType, TransactionStatus } from '@prisma/client';
+import { PrismaClient, TrustLevel, ListingType, TransactionStatus, Role } from '@prisma/client';
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 import * as argon2 from 'argon2';
 
@@ -10,11 +10,11 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   console.log('🌱 Seeding database...');
 
-  // Hash password using argon2 (same as your auth.service.ts)
+
   console.log('Hashing passwords with argon2...');
   const hashedPassword = await argon2.hash('Password123!');
 
-  // 1. Create Categories
+
   console.log('Creating categories...');
   
   const catHomeMaintenance = await prisma.listingCategory.create({
@@ -63,9 +63,26 @@ async function main() {
 
   console.log(`✅ Created ${11} categories`);
 
-  // 2. Create Users
+
+  console.log('Creating admin user...');
+
+  await prisma.user.create({
+    data: {
+      name: 'Admin',
+      email: 'admin@chronos.com',
+      password: hashedPassword,
+      role: Role.ADMIN,
+      trustLevel: TrustLevel.VETERAN,
+      bio: 'Platform administrator.',
+      balance: 100,
+    },
+  });
+
+  console.log('✅ Created admin user (admin@chronos.com)');
+
+
   console.log('Creating users...');
-  
+
   const user1 = await prisma.user.create({
     data: {
       name: 'Kiss János',
@@ -120,18 +137,18 @@ async function main() {
       email: 'horvath.gabor@example.com',
       password: hashedPassword,
       trustLevel: TrustLevel.NEWCOMER,
-      bio: null, // Some users might not have a bio
-      avatar: null, // Some users might not have an avatar
+      bio: null, 
+      avatar: null, 
       balance: 8,
     },
   });
 
   console.log(`✅ Created ${5} users (all passwords: Password123!)`);
 
-  // 3. Create Listings
+
   console.log('Creating listings...');
 
-  // OFFER type listings
+
   const listing1 = await prisma.listing.create({
     data: {
       title: 'Használt Dell laptop eladó',
@@ -192,7 +209,7 @@ async function main() {
     },
   });
 
-  // REQUEST type listings
+
   const listing6 = await prisma.listing.create({
     data: {
       title: 'PlayStation 4 vagy Xbox One kerestetik',
@@ -255,7 +272,7 @@ async function main() {
 
   console.log(`✅ Created ${10} listings (${5} OFFER, ${5} REQUEST)`);
 
-  // 4. Create Transactions
+
   console.log('Creating transactions...');
 
   const transaction1 = await prisma.transaction.create({
@@ -337,7 +354,7 @@ async function main() {
 
   console.log(`✅ Created ${7} transactions`);
 
-  // 5. Create Reviews (only for COMPLETED transactions)
+
   console.log('Creating reviews...');
 
   await prisma.review.create({
@@ -378,24 +395,94 @@ async function main() {
 
   console.log(`✅ Created ${4} reviews`);
 
+
+  console.log('Creating website reviews...');
+
+  await prisma.websiteReview.create({
+    data: {
+      rating: 5,
+      comment: 'Fantasztikus platform! Sikerült megtalálnom egy megbízható kerékpárszerelőt, aki gyorsan és olcsón megoldotta a problémámat. Mindenkinek ajánlom!',
+      userId: user3.id,
+    },
+  });
+
+  await prisma.websiteReview.create({
+    data: {
+      rating: 5,
+      comment: 'Nagyon jó ötlet ez a platform. Könnyen lehet cserélni szolgáltatásokat, és mindenki megbízható. Már több sikeres cserém volt, és nagyon elégedett vagyok.',
+      userId: user4.id,
+    },
+  });
+
+  await prisma.websiteReview.create({
+    data: {
+      rating: 4,
+      comment: 'Jó platform, egyszerű a használata. Néhány funkciót még lehetne fejleszteni, de összességében nagyon hasznos. Sokat segített a szomszédokkal való kapcsolatban.',
+      userId: user5.id,
+    },
+  });
+
+  await prisma.websiteReview.create({
+    data: {
+      rating: 5,
+      comment: 'Remek közösség! Az emberek segítőkészek és megbízhatók. Az oldal könnyen kezelhető, és az értékelési rendszer sokat segít a döntésben.',
+      userId: user1.id,
+    },
+  });
+
+  await prisma.websiteReview.create({
+    data: {
+      rating: 4,
+      comment: 'Nagyon praktikus megoldás a helyi cserékre és szolgáltatásokra. Örülök, hogy rátaláltam erre az oldalra!',
+      userId: user2.id,
+    },
+  });
+
+  console.log(`✅ Created ${5} website reviews`);
+
+  // Update averageRating for reviewed users (seed bypasses the service layer)
+  console.log('Updating user average ratings...');
+
+  await prisma.user.update({
+    where: { id: user3.id },
+    data: { averageRating: 5.00 }, // 1 review: 5
+  });
+
+  await prisma.user.update({
+    where: { id: user4.id },
+    data: { averageRating: 5.00 }, // 1 review: 5
+  });
+
+  await prisma.user.update({
+    where: { id: user5.id },
+    data: { averageRating: 4.50 }, // 2 reviews: (4 + 5) / 2
+  });
+
+  console.log('✅ Updated averageRating for 3 users');
+
   console.log('');
   console.log('🎉 Seeding completed successfully!');
   console.log('');
   console.log('📊 Summary:');
   console.log(`   - ${11} categories created`);
-  console.log(`   - ${5} users created (with bio & avatar)`);
+  console.log(`   - 1 admin user created`);
+  console.log(`   - ${5} regular users created`);
   console.log(`   - ${10} listings created (${5} OFFER, ${5} REQUEST)`);
   console.log(`   - ${7} transactions created`);
   console.log(`   - ${4} reviews created`);
+  console.log(`   - ${5} website reviews created`);
   console.log('');
   console.log('🔐 All users have the same password: Password123!');
   console.log('');
+  console.log('🛡️  Admin User:');
+  console.log('   0. admin@chronos.com (ADMIN, balance: 100)');
+  console.log('');
   console.log('👥 Test Users:');
-  console.log('   1. kiss.janos@example.com (VETERAN)');
-  console.log('   2. nagy.katalin@example.com (TRUSTED)');
-  console.log('   3. szabo.peter@example.com (NEWCOMER)');
-  console.log('   4. toth.anna@example.com (TRUSTED)');
-  console.log('   5. horvath.gabor@example.com (NEWCOMER)');
+  console.log('   1. kiss.janos@example.com (VETERAN, balance: 15)');
+  console.log('   2. nagy.katalin@example.com (TRUSTED, balance: 12)');
+  console.log('   3. szabo.peter@example.com (NEWCOMER, balance: 5)');
+  console.log('   4. toth.anna@example.com (TRUSTED, balance: 10)');
+  console.log('   5. horvath.gabor@example.com (NEWCOMER, balance: 8)');
   console.log('');
   console.log('✨ Ready to test! Login with any email and password: Password123!');
 }

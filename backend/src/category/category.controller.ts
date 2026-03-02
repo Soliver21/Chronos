@@ -8,6 +8,7 @@ import { ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
+  // Returns the full list of all available listing categories.
   @Public()
   @ApiOperation({summary:"Kategóriák elérése"})
   @ApiOkResponse({description:"Kategóriák listája"})

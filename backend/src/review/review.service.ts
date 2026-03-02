@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateReviewDTO } from "./dto/create-review.dto";
+import { CreateWebsiteReviewDTO } from "./dto/create-website-review.dto";
 
 @Injectable()
 export class ReviewService {
@@ -65,17 +66,30 @@ export class ReviewService {
         });
     }
 
-    async getServiceReviews(limit: number = 10) {
-        return await this.prisma.review.findMany({
-            take: limit,
+    async createWebsiteReview(dto: CreateWebsiteReviewDTO, userId: number) {
+        return await this.prisma.websiteReview.create({
+            data: {
+                rating: dto.rating,
+                comment: dto.comment || null,
+                userId,
+            },
             include: {
-                transaction: {
-                    include: {
-                        listing: true,
-                    },
+                user: {
+                    select: { id: true, name: true, avatar: true },
                 },
             },
-            orderBy: { id: "desc" },
+        });
+    }
+
+    async getServiceReviews(limit: number = 10) {
+        return await this.prisma.websiteReview.findMany({
+            take: limit,
+            include: {
+                user: {
+                    select: { id: true, name: true, avatar: true },
+                },
+            },
+            orderBy: { createdAt: "desc" },
         });
     }
 
