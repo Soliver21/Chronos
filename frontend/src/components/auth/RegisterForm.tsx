@@ -44,7 +44,7 @@ const RegisterComp = () => {
 
         try {
             const res = await registUser(form);
-            login(res.user, res.token);
+            login(res.user, res.accessToken);
             setForm(init);
             navigate("/dashboard");
         } catch(error) {
@@ -54,7 +54,7 @@ const RegisterComp = () => {
     }
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-10">
+    <div className="flex items-center justify-center min-h-screen">
       <Card className="w-full max-w-sm">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">Fiók létrehozása</CardTitle>
@@ -64,7 +64,7 @@ const RegisterComp = () => {
         </CardHeader>
         
         <form onSubmit={handleSubmit}>
-          <CardContent className="grid gap-4 p-10">
+          <CardContent className="grid gap-2 p-4">
             <div className="grid gap-2">
               <Label htmlFor="name">Név</Label>
               <Input 
