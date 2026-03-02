@@ -11,37 +11,37 @@ import {
 import {
   ApiBearerAuth,
   ApiBody,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiTags,
+  ApiUnauthorizedResponse,
+  ApiBadRequestResponse,
 } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UpdateUserDTO } from './dto/update-user.dto';
+import { Public } from '../auth/public.decorator';
 
 @ApiTags('Users')
 @Controller('users')
 export class UserController {
   constructor(private readonly service: UserService) {}
 
-  /**
-   * Get authenticated user's profile
-   */
+  //Returns the profile of the currently authenticated user based on their JWT token.
   @UseGuards(JwtAuthGuard)
   @Get('me')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Saját felhasználói profil lekérése' })
-  @ApiOkResponse({
-    description: 'Bejelentkezett felhasználó profil adatai',
-  })
+  @ApiOkResponse({ description: 'Bejelentkezett felhasználó profil adatai' })
+  @ApiUnauthorizedResponse({ description: 'Hiányzó vagy érvénytelen JWT token' })
   async getMyProfile(@Req() req: any) {
     return await this.service.findById(req.user.id);
   }
 
-  /**
-   * Get user profile by ID (public)
-   */
+  //Returns the public profile of any user by their numeric ID.
+  @Public()
   @Get(':id')
   @ApiOperation({ summary: 'Felhasználói profil lekérése azonosító alapján' })
   @ApiParam({
@@ -49,26 +49,23 @@ export class UserController {
     type: Number,
     description: 'Felhasználó azonosító',
   })
-  @ApiOkResponse({
-    description: 'Felhasználó profil adatai',
-  })
+  @ApiOkResponse({ description: 'Felhasználó profil adatai' })
+  @ApiNotFoundResponse({ description: 'A megadott azonosítójú felhasználó nem található' })
   async getUserProfileById(
     @Param('id', ParseIntPipe) id: number,
   ) {
     return await this.service.findById(id);
   }
 
-  /**
-   * Update authenticated user's profile
-   */
+  //Partially updates the authenticated user's profile fields (name, email, bio, avatar).
   @UseGuards(JwtAuthGuard)
   @Patch('me')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Saját felhasználói profil módosítása' })
   @ApiBody({ type: UpdateUserDTO })
-  @ApiOkResponse({
-    description: 'Felhasználói profil sikeresen frissítve',
-  })
+  @ApiOkResponse({ description: 'Felhasználói profil sikeresen frissítve' })
+  @ApiUnauthorizedResponse({ description: 'Hiányzó vagy érvénytelen JWT token' })
+  @ApiBadRequestResponse({ description: 'Érvénytelen bemeneti adatok (pl. hibás email formátum)' })
   async patchMember(
     @Req() req: any,
     @Body() member: UpdateUserDTO,
@@ -76,9 +73,8 @@ export class UserController {
     return await this.service.updateUser(req.user.id, member);
   }
 
-  /**
-   * Get user statistics (public)
-   */
+  //Returns aggregated statistics for a user: total transactions, reviews, credits spent and average rating. 
+  @Public()
   @Get(':id/stats')
   @ApiOperation({ summary: 'Felhasználói statisztikák lekérése' })
   @ApiParam({
@@ -86,9 +82,8 @@ export class UserController {
     type: Number,
     description: 'Felhasználó azonosító',
   })
-  @ApiOkResponse({
-    description: 'Felhasználó statisztikai adatai',
-  })
+  @ApiOkResponse({ description: 'Felhasználó statisztikai adatai' })
+  @ApiNotFoundResponse({ description: 'A megadott azonosítójú felhasználó nem található' })
   async getUserStatistics(
     @Param('id', ParseIntPipe) id: number,
   ) {

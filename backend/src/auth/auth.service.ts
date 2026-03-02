@@ -37,6 +37,7 @@ export class AuthService {
                 email: true,
                 name: true,
                 trustLevel: true,
+                role: true,
             },
         });
 
@@ -44,11 +45,12 @@ export class AuthService {
             sub: newUser.id,
             email: newUser.email,
             name: newUser.name,
+            role: newUser.role,
         };
 
         return {
             user: newUser,
-            accessToken: this.jwtService.sign(payload),
+            token: this.jwtService.sign(payload),
         };
     }
 
@@ -61,6 +63,7 @@ export class AuthService {
                 name: true,
                 password: true,
                 trustLevel: true,
+                role: true,
             },
         });
 
@@ -69,7 +72,7 @@ export class AuthService {
         }
 
         const passwordValid = await argon2.verify(loginUser.password, user.password);
-        
+
         if (!passwordValid) {
             throw new UnauthorizedException("Invalid email or password");
         }
@@ -80,11 +83,12 @@ export class AuthService {
             sub: userWithoutPassword.id,
             email: userWithoutPassword.email,
             name: userWithoutPassword.name,
+            role: userWithoutPassword.role,
         };
 
         return {
             user: userWithoutPassword,
-            accessToken: this.jwtService.sign(payload),
+            token: this.jwtService.sign(payload),
         };
     }
 }

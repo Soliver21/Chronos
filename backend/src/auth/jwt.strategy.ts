@@ -19,6 +19,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
         });
     }
 
+    /** Validates the JWT payload by looking up the user in the database and checking they are active. Returns the user object attached to req.user. */
     async validate(payload: JwtPayload) {
         const user = await this.prisma.user.findUnique({
             where: { id: payload.sub },
@@ -27,6 +28,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
                 email: true,
                 name: true,
                 trustLevel: true,
+                role: true,
+                isActive: true,
             },
         });
 
@@ -34,11 +37,16 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
             throw new UnauthorizedException("User not found");
         }
 
+        if (!user.isActive) {
+            throw new UnauthorizedException("Your account has been suspended");
+        }
+
         return {
             id: user.id,
             email: user.email,
             name: user.name,
             trustLevel: user.trustLevel,
+            role: user.role,
         };
     }
 }
