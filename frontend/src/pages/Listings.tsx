@@ -25,24 +25,26 @@ export default function Listings() {
 
   return (
     <main>
-    <Dashbar />
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Hirdetések</h1>
+      <Dashbar />
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold">Hirdetések</h1>
+          <div className="flex items-center gap-3">
+            <FilterBar onFilter={(filters) => loadListings(filters)} />
+            <CreateListingButton onCreated={() => loadListings()} />
+          </div>
+        </div>
 
-      <CreateListingButton onCreated={() => loadListings()} />
-      <FilterBar onFilter={(filters) => loadListings(filters)} />
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {listings.map((listing) => (
-          <ListingCard
-            key={listing.id}
-            listing={listing}
-            onDelete={handleDelete}
-          />
-        ))}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {listings.map((listing) => (
+            <ListingCard
+              key={listing.id}
+              listing={listing}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
       </div>
-    </div>
     </main>
   )
 }
-
