@@ -18,6 +18,18 @@ export class ListingService {
     });
   }
 
+  // Returns listings owned by the given user.
+  async findByUserId(userId: number) {
+    return this.prisma.listing.findMany({
+      where: { userId },
+      orderBy: { id: "desc" },
+      include: {
+        user: { select: { id: true, name: true, avatar: true, averageRating: true, trustLevel: true } },
+        category: { select: { id: true, name: true, slug: true } },
+      },
+    });
+  }
+
   async findById(id: number) {
     const listing = await this.prisma.listing.findUnique({
       where: { id },
@@ -28,18 +40,6 @@ export class ListingService {
     });
     if (!listing) throw new NotFoundException("Listing not found");
     return listing;
-  }
-
-  // ← HOZZÁADVA: saját hirdetések userId alapján
-  async findByUserId(userId: number) {
-    return this.prisma.listing.findMany({
-      where: { userId },
-      orderBy: { id: "desc" },
-      include: {
-        user: { select: { id: true, name: true, avatar: true } },
-        category: { select: { id: true, name: true, slug: true } },
-      },
-    });
   }
 
   async create(userId: number, dto: CreateListingDto) {

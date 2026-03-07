@@ -44,7 +44,7 @@ const RegisterComp = () => {
 
         try {
             const res = await registUser(form);
-            login(res.user, res.accessToken);
+            login(res.user, res.token);
             setForm(init);
             navigate("/dashboard");
         } catch(error) {

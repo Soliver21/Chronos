@@ -40,7 +40,7 @@ export function LoginForm() {
 
     try {
       const res = await loginUser(form);
-      login(res.user, res.accessToken);
+      login(res.user, res.token);
       setForm(init); 
       navigate("/dashboard");
     } catch (error) {

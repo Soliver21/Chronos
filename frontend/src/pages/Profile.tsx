@@ -97,10 +97,10 @@ const Profile = () => {
     <div className="min-h-screen flex flex-col bg-[#0a0a0a] text-white font-sans">
       <Dashbar />
 
-      <main className="flex-1 flex flex-col items-center w-full p-4 pt-10 pb-10 relative z-10">
+      <main className="flex-1 flex flex-col items-center w-full p-4 sm:p-6 pt-8 pb-10 relative z-10">
         <div className="w-full max-w-6xl space-y-8">
           <div className="flex flex-col space-y-2">
-            <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white to-gray-500 bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white to-gray-500 bg-clip-text text-transparent">
               {profileData?.name || user?.name || "Felhasználó"}
             </h1>
             <p className="text-gray-400 font-medium">{user?.email}</p>
@@ -122,22 +122,22 @@ const Profile = () => {
 
           {/* Tabs */}
           <Tabs defaultValue="profile" className="w-full">
-            <TabsList className="w-full justify-start border-b border-white/10 bg-transparent p-0 h-auto space-x-8 mb-8">
+            <TabsList className="w-full justify-start border-b border-white/10 bg-transparent p-0 h-auto overflow-x-auto flex-nowrap mb-8 gap-4 sm:gap-8">
               <TabsTrigger
                 value="profile"
-                className="rounded-none border-b-2 border-transparent px-2 pb-4 pt-2 font-semibold text-gray-500 data-[state=active]:border-indigo-500 data-[state=active]:text-white bg-transparent transition-all shadow-none"
+                className="rounded-none border-b-2 border-transparent px-2 pb-4 pt-2 font-semibold text-xs sm:text-sm text-gray-500 data-[state=active]:border-indigo-500 data-[state=active]:text-white bg-transparent transition-all shadow-none whitespace-nowrap"
               >
                 Saját adatok
               </TabsTrigger>
               <TabsTrigger
                 value="listings"
-                className="rounded-none border-b-2 border-transparent px-2 pb-4 pt-2 font-semibold text-gray-500 data-[state=active]:border-indigo-500 data-[state=active]:text-white bg-transparent transition-all shadow-none"
+                className="rounded-none border-b-2 border-transparent px-2 pb-4 pt-2 font-semibold text-xs sm:text-sm text-gray-500 data-[state=active]:border-indigo-500 data-[state=active]:text-white bg-transparent transition-all shadow-none whitespace-nowrap"
               >
                 Hirdetéseim ({listings.length})
               </TabsTrigger>
               <TabsTrigger
                 value="transactions"
-                className="rounded-none border-b-2 border-transparent px-2 pb-4 pt-2 font-semibold text-gray-500 data-[state=active]:border-indigo-500 data-[state=active]:text-white bg-transparent transition-all shadow-none"
+                className="rounded-none border-b-2 border-transparent px-2 pb-4 pt-2 font-semibold text-xs sm:text-sm text-gray-500 data-[state=active]:border-indigo-500 data-[state=active]:text-white bg-transparent transition-all shadow-none whitespace-nowrap"
               >
                 Tranzakciók ({transactions.length})
               </TabsTrigger>
@@ -149,7 +149,7 @@ const Profile = () => {
                 <CardHeader className="border-b border-white/5 bg-white/5 py-4">
                   <CardTitle className="text-lg font-bold">Profil adatok szerkesztése</CardTitle>
                 </CardHeader>
-                <CardContent className="p-8 space-y-8">
+                <CardContent className="p-4 sm:p-8 space-y-6 sm:space-y-8">
 
                   <div className="flex justify-center w-full">
                     <div className="relative group">
