@@ -47,7 +47,7 @@ export default function CreateListingButton({ onCreated }: Props) {
       setLoading(false)
     }
   }
-0
+
   return (
     <>
       {/* Gomb – mindig látható */}
@@ -61,11 +61,11 @@ export default function CreateListingButton({ onCreated }: Props) {
 
       {/* Modal */}
       {open && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-4">
+          <div className="bg-white rounded-t-2xl md:rounded-2xl shadow-2xl w-full md:max-w-md max-h-[90vh] overflow-y-auto">
 
             {/* Header */}
-            <div className="sticky top-0 flex items-center justify-between p-6 border-b border-slate-200 bg-white">
+            <div className="sticky top-0 flex items-center justify-between p-5 border-b border-slate-200 bg-white rounded-t-2xl md:rounded-t-none">
               <h2 className="text-2xl font-bold text-slate-900">Új hirdetés</h2>
               <button
                 onClick={() => setOpen(false)}
