@@ -59,20 +59,20 @@ const Dashboard = () => {
     <div className="min-h-screen flex flex-col bg-[#0a0a0a] text-white">
       <Dashbar />
 
-      <main className="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-8">
+      <main className="flex-1 p-4 sm:p-6 lg:p-10 max-w-7xl mx-auto w-full space-y-6 sm:space-y-8">
 
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div className="pb-2">
-            <h1 className="text-4xl font-extrabold tracking-tight text-white leading-relaxed">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="pb-1">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white leading-snug">
               Üdvözlünk, {profileData?.name || user?.name || "Felhasználó"}!
             </h1>
-            <p className="text-gray-400 mt-1">
+            <p className="text-gray-400 mt-1 text-sm sm:text-base">
               Kezeld az időkrediteid és figyeld a hirdetéseid állapotát.
             </p>
           </div>
           <Button
             onClick={() => navigate("/listings")}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-6 shadow-lg shadow-indigo-600/20"
+            className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6 py-5 shadow-lg shadow-indigo-600/20"
           >
             <TrendingUp className="mr-2 h-5 w-5" /> Új hirdetés feladása
           </Button>
@@ -102,7 +102,7 @@ const Dashboard = () => {
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
 
           {/* Aktivitási trendek */}
           <Card className="lg:col-span-2 bg-[#0f0f14] border-white/10 shadow-2xl">

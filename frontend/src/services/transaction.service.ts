@@ -12,7 +12,7 @@ export const getTransactionById = async (id: number): Promise<Transaction> => {
     return res.data;
 };
 export const createTransaction = async (data: {
-    listingId: string;
+    listingId: number;
     agreedHours: number;
 }): Promise<Transaction> => {
     const res = await api.post("/transactions", data);

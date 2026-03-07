@@ -25,13 +25,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   });
 
   const [token, setToken] = useState<string | null>(() => {
-    const savedToken = localStorage.getItem("token");
-    // Ha van mentett token, azonnal rákötjük az axios-ra (api), 
-    // hogy a hívások (pl. profil adatok) ne dobjanak hibát.
-    if (savedToken) {
-      api.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
-    }
-    return savedToken;
+    return localStorage.getItem("token");
   });
 
   const [loading, setLoading] = useState(false);
@@ -41,10 +35,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = (userData: any, token: string) => {
     localStorage.setItem("user", JSON.stringify(userData));
     localStorage.setItem("token", token);
-    
-    // API fejléc beállítása a bejelentkezés pillanatában
-    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    
     setUser(userData);
     setToken(token);
   };
@@ -54,10 +44,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
-    
-    // API fejléc törlése
-    delete api.defaults.headers.common["Authorization"];
-    
     setUser(null);
     setToken(null);
     window.location.href = "/login";

@@ -51,6 +51,17 @@ export class ListingController {
     return this.listingService.findAll(parsedCategoryId);
   }
 
+  // Returns listings owned by the authenticated user.
+  @UseGuards(JwtAuthGuard)
+  @Get("me")
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Bejelentkezett felhasználó saját hirdetései" })
+  @ApiOkResponse({ description: "Saját hirdetések listája" })
+  @ApiUnauthorizedResponse({ description: "Hiányzó vagy érvénytelen JWT token" })
+  getMyListings(@Req() req: { user: { id: number } }) {
+    return this.listingService.findByUserId(req.user.id);
+  }
+
   // Returns a single listing by its ID, including the owner and category details.
   @Public()
   @Get(":id")

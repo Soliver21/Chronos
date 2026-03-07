@@ -19,7 +19,7 @@ export const getListingById = async (id: number): Promise<Listing> => {
 };
 
 export const getMyListings = async (): Promise<Listing[]> => {
-    const res = await api.get("/listings");
+    const res = await api.get("/listings/me");
     return res.data;
 };
 
