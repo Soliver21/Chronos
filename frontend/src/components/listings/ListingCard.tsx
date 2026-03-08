@@ -17,6 +17,7 @@ export default function ListingCard({ listing, onClaimed }: Props) {
   const { user } = useAuth()
   const [loading, setLoading] = useState(false)
   const [claimed, setClaimed] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const categoryName = typeof listing.category === 'object'
     ? (listing.category as any).name
@@ -44,12 +45,24 @@ export default function ListingCard({ listing, onClaimed }: Props) {
     try {
       await createTransaction({
         listingId: listing.id,
-        agreedHours: listing.estimatedHours ?? 1,
+        agreedHours: Math.min(Math.max(listing.estimatedHours ?? 1, 1), 6),
       })
       setClaimed(true)
       onClaimed?.()
-    } catch (err) {
-      console.error("Tranzakció hiba:", err)
+    } catch (err: any) {
+      const raw = err.response?.data?.message || ""
+      let msg = "Hiba történt az igénylésnél."
+      if (raw.includes("Insufficient credits")) {
+        const required = raw.match(/Required: (\d+)/)?.[1]
+        const available = raw.match(/Available: (\d+)/)?.[1]
+        msg = `Nincs elég kredited. Szükséges: ${required}, elérhető: ${available}.`
+      } else if (raw.includes("own listing")) {
+        msg = "Saját hirdetést nem igényelhetsz."
+      } else if (raw.includes("not found")) {
+        msg = "A hirdetés nem található."
+      }
+      setError(msg)
+      setTimeout(() => setError(null), 2500)
     } finally {
       setLoading(false)
     }
@@ -105,6 +118,11 @@ export default function ListingCard({ listing, onClaimed }: Props) {
             <span className="font-semibold text-gray-800 text-sm">{listing.user?.name || firstName}</span>
           </div>
 
+          {error ? (
+            <div className="w-full px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-[11px] text-red-500 font-medium text-center animate-in fade-in slide-in-from-top-1">
+              {error}
+            </div>
+          ) : (
           <Button
             className={`w-full rounded-lg font-semibold shadow-sm transition-all ${
               claimed
@@ -124,6 +142,7 @@ export default function ListingCard({ listing, onClaimed }: Props) {
               ? "Saját hirdetés"
               : "Igénylés"}
           </Button>
+          )}
         </div>
       </div>
     </Card>
