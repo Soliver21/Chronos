@@ -1,15 +1,21 @@
 const Footer = () => (
   <footer className="border-t border-white/5 mt-8 px-4 sm:px-8 pt-12 pb-6">
     <div className="max-w-6xl mx-auto mb-10">
-      {/* Brand sor – teljes szélesség mobilon */}
-      <div className="mb-8 text-center sm:text-left">
-        <div className="text-xl font-bold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent mb-3">Chronos</div>
-        <p className="text-gray-500 text-sm leading-relaxed max-w-xs mx-auto sm:mx-0">
-          Modern peer-to-peer piactér, amely a bizalomra, átláthatóságra és a közösség által vezérelt cserére épül.
-        </p>
-      </div>
-      {/* Link oszlopok – 2x2 mobilon, 3 oszlop tablettől */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-8">
+
+      {/* Grid: brand + 3 link oszlop egy sorban nagy képernyőn */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+
+        {/* Brand */}
+        <div className="sm:col-span-2 lg:col-span-1">
+          <div className="text-xl font-bold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent mb-3">
+            Chronos
+          </div>
+          <p className="text-gray-500 text-sm leading-relaxed max-w-xs">
+            Modern peer-to-peer piactér, amely a bizalomra, átláthatóságra és a közösség által vezérelt cserére épül.
+          </p>
+        </div>
+
+        {/* Link oszlopok */}
         {[
           { title: "Termék", links: ["Funkciók", "Árazás", "Biztonság", "Fejlesztési terv"] },
           { title: "Erőforrások", links: ["Dokumentáció", "API referencia", "Közösség", "Támogatás"] },
@@ -28,6 +34,7 @@ const Footer = () => (
         ))}
       </div>
     </div>
+
     <div className="border-t border-white/5 pt-6 text-center text-gray-600 text-sm">
       © 2026 Chronos. Minden jog fenntartva.
     </div>

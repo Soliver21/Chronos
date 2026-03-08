@@ -8,7 +8,6 @@ import TrustLevelCards from "../components/home/TrustLevelCards";
 const Home = () => {
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white overflow-x-hidden">
-      {/* Háttér gradiens */}
       <div
         className="fixed inset-0 -z-10 pointer-events-none"
         style={{

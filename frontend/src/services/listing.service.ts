@@ -52,7 +52,7 @@ export const updateListing = async (
     return res.data;
 };
 
-// Hirdetés törlése, TESZT!
+// Hirdetés törlése, TESZT! -- siker
 export const deleteListing = async (id: number): Promise<void> => {
     await api.delete(`/listings/${id}`);
 };
