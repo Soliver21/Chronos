@@ -129,7 +129,7 @@ export default function ListingCard({ listing, onClaimed }: Props) {
                 ? "bg-green-100 text-green-700 hover:bg-green-100 cursor-default"
                 : isOwn
                 ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700 text-white hover:shadow-md"
+                : "bg-gradient-to-r from-[#667eea] to-[#764ba2] hover:shadow-md text-white"
             }`}
             onClick={handleClaim}
             disabled={isOwn || loading || claimed}

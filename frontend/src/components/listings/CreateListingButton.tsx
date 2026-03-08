@@ -53,7 +53,7 @@ export default function CreateListingButton({ onCreated }: Props) {
       {/* Gomb – mindig látható */}
       <Button
         onClick={() => setOpen(true)}
-        className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl rounded-lg px-6 py-2.5 font-semibold flex items-center gap-2 transition-all"
+        className="bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 rounded-lg px-6 py-2.5 font-semibold flex items-center gap-2 transition-all"
       >
         <Plus size={20} />
         Új hirdetés
@@ -179,7 +179,7 @@ export default function CreateListingButton({ onCreated }: Props) {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+                  className="flex-1 bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white rounded-lg font-semibold transition-all"
                 >
                   {loading ? "Mentés..." : "Mentés"}
                 </Button>
