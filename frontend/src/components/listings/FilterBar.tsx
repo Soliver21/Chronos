@@ -94,10 +94,16 @@ export default function FilterBar({ onFilter, mobileOnly = false }: Props) {
                 <button onClick={() => setModalOpen(false)} className="p-1.5 hover:bg-white/5 rounded-lg"><X size={22} className="text-gray-400" /></button>
               </div>
               <div className="p-5 space-y-4">
-                <FilterFields values={filters} onChange={handleChange} isDark={isDark} />
-                <div className="flex gap-3 pt-3 border-t border-white/5">
-                  <Button variant="outline" onClick={() => setModalOpen(false)} className={`flex-1 rounded-lg font-semibold ${cancelBtn}`}>Mégse</Button>
-                  <Button onClick={() => handleApply(() => setModalOpen(false))} className="flex-1 bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white rounded-lg font-semibold transition-all">Alkalmazás</Button>
+                <FilterFields values={filters} onChange={handleChange} isDark={false} />
+                <div className="flex gap-3 pt-3 border-t border-slate-100">
+                  <Button variant="outline" onClick={() => setModalOpen(false)}
+                    className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200 rounded-lg font-semibold transition-colors">
+                    Mégse
+                  </Button>
+                  <Button onClick={() => handleApply(() => setModalOpen(false))}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors">
+                    Alkalmazás
+                  </Button>
                 </div>
                 {hasFilters && <Button variant="outline" onClick={handleReset} className={`w-full rounded-lg font-semibold ${resetBtn}`}><X size={15} className="mr-1" />Szűrők törlése</Button>}
               </div>

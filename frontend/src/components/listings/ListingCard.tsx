@@ -52,11 +52,19 @@ export default function ListingCard({ listing, onClaimed }: Props) {
       setClaimed(true)
       onClaimed?.()
     } catch (err: any) {
+<<<<<<< HEAD
       const raw = err.response?.data?.message ?? ""
       let msg = "Hiba történt az igénylésnél."
       if (raw.includes("Insufficient credits")) {
         const required = raw.match(/Required: (\d+)/)?.[1]
         const available = raw.match(/Available: (\d+)/)?.[2]
+=======
+      const raw = err.response?.data?.message || ""
+      let msg = "Hiba történt az igénylésnél."
+      if (raw.includes("Insufficient credits")) {
+        const required = raw.match(/Required: (\d+)/)?.[1]
+        const available = raw.match(/Available: (\d+)/)?.[1]
+>>>>>>> 254d7bc048459339d70b09211195c86ba104c982
         msg = `Nincs elég kredited. Szükséges: ${required}, elérhető: ${available}.`
       } else if (raw.includes("own listing")) {
         msg = "Saját hirdetést nem igényelhetsz."
@@ -104,6 +112,7 @@ export default function ListingCard({ listing, onClaimed }: Props) {
             <span className={`font-semibold text-sm ${userNameCls}`}>{listing.user?.name || firstName}</span>
           </div>
 
+<<<<<<< HEAD
           {/* Hibaüzenet */}
           {error && (
             <div className="w-full px-3 py-2 rounded-lg bg-red-500/10 border border-red-200 text-[11px] text-red-500 font-medium text-center animate-in fade-in slide-in-from-top-1 mb-2">
@@ -116,6 +125,20 @@ export default function ListingCard({ listing, onClaimed }: Props) {
               claimed ? "bg-green-100 text-green-700 hover:bg-green-100 cursor-default"
               : isOwn ? (isDark ? "bg-white/5 text-gray-500 cursor-not-allowed" : "bg-slate-100 text-slate-400 cursor-not-allowed")
               : "bg-gradient-to-r from-[#667eea] to-[#764ba2] hover:shadow-md text-white"
+=======
+          {error ? (
+            <div className="w-full px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-[11px] text-red-500 font-medium text-center animate-in fade-in slide-in-from-top-1">
+              {error}
+            </div>
+          ) : (
+          <Button
+            className={`w-full rounded-lg font-semibold shadow-sm transition-all ${
+              claimed
+                ? "bg-green-100 text-green-700 hover:bg-green-100 cursor-default"
+                : isOwn
+                ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                : "bg-gradient-to-r from-[#667eea] to-[#764ba2] hover:shadow-md text-white"
+>>>>>>> 254d7bc048459339d70b09211195c86ba104c982
             }`}
             onClick={handleClaim}
             disabled={isOwn || loading || claimed}
@@ -125,6 +148,7 @@ export default function ListingCard({ listing, onClaimed }: Props) {
               : isOwn ? "Saját hirdetés"
               : "Igénylés"}
           </Button>
+          )}
         </div>
       </div>
     </Card>
