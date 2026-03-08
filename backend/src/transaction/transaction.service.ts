@@ -220,7 +220,7 @@ export class TransactionService {
       await this.updateTrustLevel(transaction.providerId);
 
       return updatedTransaction;
-    });
+    }, { timeout: 15000 });
   }
 
 

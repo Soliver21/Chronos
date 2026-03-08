@@ -110,10 +110,10 @@ export default function FilterBar({ onFilter, mobileOnly = false }: Props) {
                 <button onClick={() => setModalOpen(false)} className="p-1.5 hover:bg-white/5 rounded-lg"><X size={22} className="text-gray-400" /></button>
               </div>
               <div className="p-5 space-y-4">
-                <FilterFields values={filters} categories={categories} onChange={handleChange} isDark={false} />
-                <div className="flex gap-3 pt-3 border-t border-slate-100">
+                <FilterFields values={filters} categories={categories} onChange={handleChange} isDark={isDark} />
+                <div className={`flex gap-3 pt-3 border-t ${isDark ? "border-white/10" : "border-slate-100"}`}>
                   <Button variant="outline" onClick={() => setModalOpen(false)}
-                    className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200 rounded-lg font-semibold transition-colors">
+                    className={`flex-1 rounded-lg font-semibold transition-colors ${isDark ? "bg-white/5 hover:bg-white/10 text-gray-300 border-white/10" : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200"}`}>
                     Mégse
                   </Button>
                   <Button onClick={() => handleApply(() => setModalOpen(false))}
