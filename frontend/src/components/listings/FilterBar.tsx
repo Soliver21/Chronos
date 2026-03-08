@@ -107,7 +107,7 @@ export default function FilterBar({ onFilter, mobileOnly = false }: Props) {
                     Mégse
                   </Button>
                   <Button onClick={() => handleApply(() => setModalOpen(false))}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors">
+                    className="flex-1 bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white rounded-lg font-semibold transition-all">
                     Alkalmazás
                   </Button>
                 </div>
@@ -135,7 +135,7 @@ export default function FilterBar({ onFilter, mobileOnly = false }: Props) {
       <FilterFields values={filters} onChange={handleChange} />
       <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
         <Button onClick={() => handleApply()}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors">
+          className="w-full bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white rounded-lg font-semibold transition-all">
           Alkalmazás
         </Button>
         {hasFilters && (
