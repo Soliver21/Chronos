@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import Dashbar from "../components/dashboard/Dashbar";
@@ -8,21 +8,25 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
-import { Avatar, AvatarFallback } from "../components/ui/avatar";
-import { Star } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
+import { Star, Loader2 } from "lucide-react";
 import { getUserById, getUserStats, updateMyProfile } from "../services/user.service";
 import { getMyListings } from "../services/listing.service";
 import { getMyTransactions } from "../services/transaction.service";
 import { getUserReviews, type UserReview } from "../services/rating.service";
 import { ThemeSwitch } from "../components/ui/theme-switch";
+import { api } from "../services/api";
 import type { User, UserStats } from "../types/user.types";
 import type { Listing } from "../types/listing.types";
 import type { Transaction } from "../types/transaction.types";
+
+const AVATAR_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
 
 const Profile = () => {
   const { user, login, token } = useAuth();
   const { theme } = useTheme();
   const isDark = theme === "dark";
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [profileData, setProfileData] = useState<User | null>(null);
   const [stats, setStats] = useState<UserStats | null>(null);
@@ -34,6 +38,7 @@ const Profile = () => {
   const [formBio, setFormBio] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -76,6 +81,29 @@ const Profile = () => {
       setSaveMsg("Hiba a mentés során.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      setAvatarUploading(true);
+      const res = await api.post("/upload/avatar", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      const updated = res.data.user;
+      setProfileData(updated);
+      login(updated, token!);
+      setSaveMsg("Profilkép sikeresen frissítve!");
+      setTimeout(() => setSaveMsg(null), 3000);
+    } catch {
+      setSaveMsg("Hiba a profilkép feltöltésekor.");
+    } finally {
+      setAvatarUploading(false);
+      e.target.value = "";
     }
   };
 
@@ -124,7 +152,6 @@ const Profile = () => {
       <main className="flex-1 flex flex-col items-center w-full p-4 sm:p-6 pt-8 pb-10">
         <div className="w-full max-w-6xl space-y-8">
 
-          {/* Fejléc */}
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 pb-2">
             <div className="flex flex-col space-y-1">
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-normal">
@@ -132,19 +159,14 @@ const Profile = () => {
               </h1>
               <p className={`font-medium ${subText}`}>{user?.email}</p>
             </div>
-            <div className="pt-1">
-              <ThemeSwitch />
-            </div>
+            <div className="pt-1"><ThemeSwitch /></div>
           </div>
 
-          {/* Stat kártyák */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {statCards.map((stat, i) => (
               <Card key={i} className={`shadow-xl transition-all hover:border-indigo-500/30 ${cardBg}`}>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-xs uppercase tracking-widest font-semibold text-gray-500">
-                    {stat.label}
-                  </CardTitle>
+                  <CardTitle className="text-xs uppercase tracking-widest font-semibold text-gray-500">{stat.label}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>{stat.value}</div>
@@ -153,7 +175,6 @@ const Profile = () => {
             ))}
           </div>
 
-          {/* Tabs – szélesebb triggerek hogy ne legyen scrollbar */}
           <Tabs defaultValue="profile" className="w-full">
             <TabsList className={`w-full justify-start border-b bg-transparent p-0 h-auto mb-6 gap-0 ${tabBorder}`}>
               <TabsTrigger value="profile" className={tabTriggerCls}>Saját adatok</TabsTrigger>
@@ -169,23 +190,47 @@ const Profile = () => {
                   <CardTitle className="text-lg font-bold">Profil adatok szerkesztése</CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 sm:p-8 space-y-6 sm:space-y-8">
+
                   {/* Avatar */}
                   <div className="flex justify-center w-full">
                     <div className="relative group">
                       <Avatar className={`w-32 h-32 border-4 shadow-2xl transition-transform group-hover:scale-105 ${isDark ? "border-[#1a1a1f]" : "border-gray-100"}`}>
+                        <AvatarImage
+                          src={profileData?.avatar ? `${AVATAR_BASE}${profileData.avatar}` : undefined}
+                          alt={profileData?.name ?? ""}
+                        />
                         <AvatarFallback className="text-5xl bg-gradient-to-br from-indigo-600 to-purple-700 text-white font-bold">
                           {(profileData?.name || user?.name || "?").substring(0, 1).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <div className={`absolute bottom-1 right-1 bg-indigo-600 p-2 rounded-full border-2 cursor-pointer hover:bg-indigo-500 transition-colors ${isDark ? "border-[#0f0f14]" : "border-white"}`}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" viewBox="0 0 16 16">
-                          <path d="M10.5 8.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z" />
-                          <path d="M2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2zm.5 2a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm9 2.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z" />
-                        </svg>
-                      </div>
+
+                      {/* Kamera gomb */}
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={avatarUploading}
+                        className={`absolute bottom-1 right-1 bg-indigo-600 p-2 rounded-full border-2 hover:bg-indigo-500 transition-colors disabled:opacity-50 ${isDark ? "border-[#0f0f14]" : "border-white"}`}
+                      >
+                        {avatarUploading ? (
+                          <Loader2 size={16} className="text-white animate-spin" />
+                        ) : (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" viewBox="0 0 16 16">
+                            <path d="M10.5 8.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z" />
+                            <path d="M2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2zm.5 2a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm9 2.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z" />
+                          </svg>
+                        )}
+                      </button>
+
+                      {/* Rejtett file input */}
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleAvatarChange}
+                      />
                     </div>
                   </div>
-                  {/* Form */}
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
                     <div className="grid gap-3">
                       <Label className={`font-semibold ml-1 ${labelCls}`}>Megjelenítendő név</Label>
@@ -197,12 +242,14 @@ const Profile = () => {
                       <Input value={user?.email} readOnly className={`h-12 ${inputReadonly}`} />
                     </div>
                   </div>
+
                   <div className="grid gap-3">
                     <Label className={`font-semibold ml-1 ${labelCls}`}>Bemutatkozás</Label>
                     <Textarea value={formBio} onChange={(e) => setFormBio(e.target.value)}
                       placeholder="Mesélj magadról néhány mondatban..."
                       className={`min-h-[120px] focus:ring-2 focus:ring-indigo-500 transition-all resize-none ${textareaBg}`} />
                   </div>
+
                   <div className={`pt-6 border-t flex flex-col sm:flex-row justify-between items-center gap-6 ${isDark ? "border-white/10" : "border-gray-100"}`}>
                     <div className="p-3 bg-indigo-500/10 rounded-xl border border-indigo-500/20">
                       <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1">Bizalmi szint</p>
@@ -268,11 +315,10 @@ const Profile = () => {
                             <p className="text-indigo-400 font-black">{tx.agreedHours} óra</p>
                             <p className={`text-xs ${subText}`}>{tx.totalPrice} kredit</p>
                           </div>
-                          <span className={`text-[10px] font-bold uppercase px-3 py-1.5 rounded-full ${
-                            tx.status === "COMPLETED" ? "bg-green-500/20 text-green-500"
-                            : tx.status === "CANCELLED" ? "bg-red-500/20 text-red-400"
-                            : "bg-yellow-500/20 text-yellow-500"
-                          }`}>
+                          <span className={`text-[10px] font-bold uppercase px-3 py-1.5 rounded-full ${tx.status === "COMPLETED" ? "bg-green-500/20 text-green-500"
+                              : tx.status === "CANCELLED" ? "bg-red-500/20 text-red-400"
+                                : "bg-yellow-500/20 text-yellow-500"
+                            }`}>
                             {tx.status === "PENDING" ? "Folyamatban" : tx.status === "COMPLETED" ? "Teljesítve" : "Törölve"}
                           </span>
                         </div>
@@ -297,27 +343,16 @@ const Profile = () => {
                       <CardContent className="p-5">
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
-                            <p className={`text-xs ${subText} mb-2`}>
-                              {review.transaction?.listing?.title ?? "Ismeretlen hirdetés"}
-                            </p>
+                            <p className={`text-xs ${subText} mb-2`}>{review.transaction?.listing?.title ?? "Ismeretlen hirdetés"}</p>
                             {review.comment && (
-                              <p className={`text-sm leading-relaxed ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                                "{review.comment}"
-                              </p>
+                              <p className={`text-sm leading-relaxed ${isDark ? "text-gray-300" : "text-gray-700"}`}>"{review.comment}"</p>
                             )}
                           </div>
-                          {/* Csillagok */}
                           <div className="flex items-center gap-1 flex-shrink-0">
                             {[1, 2, 3, 4, 5].map((star) => (
-                              <Star
-                                key={star}
-                                size={16}
-                                className={star <= review.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-600"}
-                              />
+                              <Star key={star} size={16} className={star <= review.rating ? "text-yellow-400 fill-yellow-400" : "text-gray-600"} />
                             ))}
-                            <span className={`ml-1 text-sm font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
-                              {review.rating}/5
-                            </span>
+                            <span className={`ml-1 text-sm font-bold ${isDark ? "text-white" : "text-gray-900"}`}>{review.rating}/5</span>
                           </div>
                         </div>
                       </CardContent>
@@ -331,7 +366,6 @@ const Profile = () => {
                 </div>
               )}
             </TabsContent>
-
           </Tabs>
         </div>
       </main>

@@ -1,17 +1,25 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Input } from "../ui/input"
 import { Button } from "../ui/button"
 import { X, SlidersHorizontal } from "lucide-react"
 import type { ListingFilter } from "../../types/listing.types"
 import { useTheme } from "../../context/ThemeContext"
+import { api } from "../../services/api"
+
+interface Category {
+  id: number
+  name: string
+  slug: string
+}
 
 interface Props {
   onFilter: (filters: ListingFilter) => void
   mobileOnly?: boolean
 }
 
-function FilterFields({ values, onChange, isDark }: {
+function FilterFields({ values, categories, onChange, isDark }: {
   values: ListingFilter
+  categories: Category[]
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
   isDark: boolean
 }) {
@@ -29,7 +37,12 @@ function FilterFields({ values, onChange, isDark }: {
       </div>
       <div>
         <label className={`text-sm font-semibold block mb-1.5 ${labelCls}`}>Kategória</label>
-        <Input name="category" placeholder="pl. Babysitting" value={values.category ? String(values.category) : ""} onChange={onChange} className={`rounded-lg ${inputCls}`} />
+        <select name="category" value={values.category ? String(values.category) : ""} onChange={onChange} className={selectCls}>
+          <option value="">Összes</option>
+          {categories.map(cat => (
+            <option key={cat.id} value={cat.name}>{cat.name}</option>
+          ))}
+        </select>
       </div>
       <div>
         <label className={`text-sm font-semibold block mb-1.5 ${labelCls}`}>Típus</label>
@@ -58,6 +71,11 @@ export default function FilterBar({ onFilter, mobileOnly = false }: Props) {
   const isDark = theme === "dark"
   const [filters, setFilters] = useState<ListingFilter>({})
   const [modalOpen, setModalOpen] = useState(false)
+  const [categories, setCategories] = useState<Category[]>([])
+
+  useEffect(() => {
+    api.get("/categories").then(res => setCategories(res.data)).catch(console.error)
+  }, [])
 
   const hasFilters = Object.values(filters).some(v => v !== undefined && v !== "")
   const activeCount = Object.values(filters).filter(v => v !== undefined && v !== "").length
@@ -74,9 +92,7 @@ export default function FilterBar({ onFilter, mobileOnly = false }: Props) {
 
   const panelBg = isDark ? "bg-[#0f0f14] border-white/10" : "bg-white border-slate-200"
   const panelTitle = isDark ? "text-white" : "text-slate-900"
-  const applyBtn = "bg-indigo-600 hover:bg-indigo-700 text-white"
   const resetBtn = isDark ? "bg-red-900/30 hover:bg-red-900/50 text-red-400 border-red-900/50" : "bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
-  const cancelBtn = isDark ? "bg-white/5 hover:bg-white/10 text-gray-300 border-white/10" : "bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200"
   const mobileBtn = isDark ? "bg-white/5 text-white border-white/10 hover:bg-white/10" : "bg-white text-black border-slate-300 hover:bg-slate-50"
 
   if (mobileOnly) {
@@ -94,14 +110,14 @@ export default function FilterBar({ onFilter, mobileOnly = false }: Props) {
                 <button onClick={() => setModalOpen(false)} className="p-1.5 hover:bg-white/5 rounded-lg"><X size={22} className="text-gray-400" /></button>
               </div>
               <div className="p-5 space-y-4">
-                <FilterFields values={filters} onChange={handleChange} isDark={false} />
+                <FilterFields values={filters} categories={categories} onChange={handleChange} isDark={false} />
                 <div className="flex gap-3 pt-3 border-t border-slate-100">
                   <Button variant="outline" onClick={() => setModalOpen(false)}
                     className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200 rounded-lg font-semibold transition-colors">
                     Mégse
                   </Button>
                   <Button onClick={() => handleApply(() => setModalOpen(false))}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors">
+                    className="flex-1 bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white rounded-lg font-semibold transition-colors">
                     Alkalmazás
                   </Button>
                 </div>
@@ -119,7 +135,7 @@ export default function FilterBar({ onFilter, mobileOnly = false }: Props) {
       <h2 className={`text-base font-bold mb-4 flex items-center gap-2 ${panelTitle}`}>
         <SlidersHorizontal size={16} className="text-gray-400" />Szűrések
       </h2>
-      <FilterFields values={filters} onChange={handleChange} isDark={isDark} />
+      <FilterFields values={filters} categories={categories} onChange={handleChange} isDark={isDark} />
       <div className="mt-4 pt-4 border-t border-white/5 space-y-2">
         <Button onClick={() => handleApply()} className="w-full bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white rounded-lg font-semibold transition-all">Alkalmazás</Button>
         {hasFilters && <Button variant="outline" onClick={handleReset} className={`w-full rounded-lg font-semibold ${resetBtn}`}><X size={15} className="mr-1" />Törlés</Button>}
