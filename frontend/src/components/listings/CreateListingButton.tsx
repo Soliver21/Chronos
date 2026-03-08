@@ -59,7 +59,7 @@ export default function CreateListingButton({ onCreated }: Props) {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-xl rounded-lg px-6 py-2.5 font-semibold flex items-center gap-2 transition-all">
+      <Button onClick={() => setOpen(true)} className="bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white shadow-lg hover:shadow-xl hover:-translate-y-0.5 rounded-lg px-6 py-2.5 font-semibold flex items-center gap-2 transition-all">
         <Plus size={20} />Új hirdetés
       </Button>
       {open && (
@@ -103,7 +103,7 @@ export default function CreateListingButton({ onCreated }: Props) {
               </div>
               <div className={`flex gap-3 pt-4 border-t ${isDark ? "border-white/10" : "border-slate-100"}`}>
                 <Button type="button" variant="outline" onClick={() => setOpen(false)} className={cancelCls}>Mégse</Button>
-                <Button type="submit" disabled={loading} className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold">
+                <Button type="submit" disabled={loading} className="flex-1 bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white rounded-lg font-semibold transition-all">
                   {loading ? "Mentés..." : "Mentés"}
                 </Button>
               </div>

@@ -20,6 +20,7 @@ export default function ListingCard({ listing, onClaimed }: Props) {
   const isDark = theme === "dark"
   const [loading, setLoading] = useState(false)
   const [claimed, setClaimed] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const categoryName = typeof listing.category === "object" ? (listing.category as any).name : listing.category || "Egyéb"
   const typeName = typeof listing.type === "object" ? (listing.type as any).name : listing.type || "REQUEST"
@@ -44,11 +45,26 @@ export default function ListingCard({ listing, onClaimed }: Props) {
     if (isOwn || loading || claimed) return
     setLoading(true)
     try {
-      await createTransaction({ listingId: listing.id, agreedHours: listing.estimatedHours ?? 1 })
+      await createTransaction({
+        listingId: listing.id,
+        agreedHours: Math.min(Math.max(listing.estimatedHours ?? 1, 1), 6),
+      })
       setClaimed(true)
       onClaimed?.()
-    } catch (err) {
-      console.error("Tranzakció hiba:", err)
+    } catch (err: any) {
+      const raw = err.response?.data?.message ?? ""
+      let msg = "Hiba történt az igénylésnél."
+      if (raw.includes("Insufficient credits")) {
+        const required = raw.match(/Required: (\d+)/)?.[1]
+        const available = raw.match(/Available: (\d+)/)?.[2]
+        msg = `Nincs elég kredited. Szükséges: ${required}, elérhető: ${available}.`
+      } else if (raw.includes("own listing")) {
+        msg = "Saját hirdetést nem igényelhetsz."
+      } else if (raw.includes("not found")) {
+        msg = "A hirdetés nem található."
+      }
+      setError(msg)
+      setTimeout(() => setError(null), 2500)
     } finally {
       setLoading(false)
     }
@@ -61,6 +77,7 @@ export default function ListingCard({ listing, onClaimed }: Props) {
         <h3 className={`text-lg font-bold leading-tight mb-2 line-clamp-2 pr-20 ${titleCls}`}>{listing.title}</h3>
         <div className={`text-xs font-semibold uppercase tracking-wide mb-3 ${catCls}`}>{categoryName}</div>
         <p className={`text-sm leading-relaxed line-clamp-3 mb-5 flex-grow ${descCls}`}>{listing.description}</p>
+
         <div className="grid grid-cols-2 gap-3 mb-5">
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3 border border-blue-200">
             <div className="flex items-center justify-center gap-1 mb-1">
@@ -77,6 +94,7 @@ export default function ListingCard({ listing, onClaimed }: Props) {
             <div className="text-xs text-orange-600 text-center font-semibold">becsült óra</div>
           </div>
         </div>
+
         <div className={`mt-auto border-t pt-4 ${dividerCls}`}>
           <div className="flex items-center gap-3 mb-4">
             <Avatar className={`h-9 w-9 border-2 ring-2 ${avatarBorderCls}`}>
@@ -85,11 +103,19 @@ export default function ListingCard({ listing, onClaimed }: Props) {
             </Avatar>
             <span className={`font-semibold text-sm ${userNameCls}`}>{listing.user?.name || firstName}</span>
           </div>
+
+          {/* Hibaüzenet */}
+          {error && (
+            <div className="w-full px-3 py-2 rounded-lg bg-red-500/10 border border-red-200 text-[11px] text-red-500 font-medium text-center animate-in fade-in slide-in-from-top-1 mb-2">
+              {error}
+            </div>
+          )}
+
           <Button
             className={`w-full rounded-lg font-semibold shadow-sm transition-all ${
               claimed ? "bg-green-100 text-green-700 hover:bg-green-100 cursor-default"
               : isOwn ? (isDark ? "bg-white/5 text-gray-500 cursor-not-allowed" : "bg-slate-100 text-slate-400 cursor-not-allowed")
-              : "bg-indigo-600 hover:bg-indigo-700 text-white hover:shadow-md"
+              : "bg-gradient-to-r from-[#667eea] to-[#764ba2] hover:shadow-md text-white"
             }`}
             onClick={handleClaim}
             disabled={isOwn || loading || claimed}
