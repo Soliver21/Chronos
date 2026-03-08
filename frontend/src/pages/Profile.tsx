@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Star, Loader2 } from "lucide-react";
 import { getUserById, getUserStats, updateMyProfile } from "../services/user.service";
 import { getMyListings } from "../services/listing.service";
-import { getMyTransactions } from "../services/transaction.service";
+import { getMyTransactions, completeTransaction, cancelTransaction } from "../services/transaction.service";
 import { getUserReviews, type UserReview } from "../services/rating.service";
 import { ThemeSwitch } from "../components/ui/theme-switch";
 import { api } from "../services/api";
@@ -39,6 +39,7 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [txActionLoading, setTxActionLoading] = useState<number | null>(null);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -81,6 +82,42 @@ const Profile = () => {
       setSaveMsg("Hiba a mentés során.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const refreshAfterTxAction = async () => {
+    if (!user?.id) return;
+    const [userData, statsData, txData] = await Promise.all([
+      getUserById(user.id),
+      getUserStats(user.id),
+      getMyTransactions(),
+    ]);
+    setProfileData(userData);
+    setStats(statsData);
+    setTransactions(txData);
+  };
+
+  const handleCompleteTransaction = async (txId: number) => {
+    try {
+      setTxActionLoading(txId);
+      await completeTransaction(txId);
+      await refreshAfterTxAction();
+    } catch (err) {
+      console.error("Hiba a tranzakció lezárásakor:", err);
+    } finally {
+      setTxActionLoading(null);
+    }
+  };
+
+  const handleCancelTransaction = async (txId: number) => {
+    try {
+      setTxActionLoading(txId);
+      await cancelTransaction(txId);
+      await refreshAfterTxAction();
+    } catch (err) {
+      console.error("Hiba a tranzakció törlésekor:", err);
+    } finally {
+      setTxActionLoading(null);
     }
   };
 
@@ -302,29 +339,60 @@ const Profile = () => {
             <TabsContent value="transactions" className="focus-visible:outline-none">
               {transactions.length > 0 ? (
                 <div className="space-y-4">
-                  {transactions.map((tx: Transaction) => (
-                    <Card key={tx.id} className={txCardBg}>
-                      <CardContent className="p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                        <div>
-                          <p className={`font-bold ${isDark ? "text-white" : "text-gray-900"}`}>{tx.listing?.title ?? `Hirdetés #${tx.id}`}</p>
-                          <p className={`text-xs mt-1 ${subText}`}>{tx.client?.name} → {tx.provider?.name}</p>
-                          <p className="text-xs text-gray-500 mt-0.5">{new Date(tx.createdAt).toLocaleDateString("hu-HU")}</p>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <div className="text-right">
-                            <p className="text-indigo-400 font-black">{tx.agreedHours} óra</p>
-                            <p className={`text-xs ${subText}`}>{tx.totalPrice} kredit</p>
+                  {transactions.map((tx: Transaction) => {
+                    const isProvider = tx.provider?.id === user?.id;
+                    const isClient = tx.client?.id === user?.id;
+                    const isPending = tx.status === "PENDING";
+                    const isLoading = txActionLoading === tx.id;
+                    return (
+                      <Card key={tx.id} className={txCardBg}>
+                        <CardContent className="p-5 flex flex-col gap-4">
+                          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div>
+                              <p className={`font-bold ${isDark ? "text-white" : "text-gray-900"}`}>{tx.listing?.title ?? `Hirdetés #${tx.id}`}</p>
+                              <p className={`text-xs mt-1 ${subText}`}>{tx.client?.name} → {tx.provider?.name}</p>
+                              <p className="text-xs text-gray-500 mt-0.5">{new Date(tx.createdAt).toLocaleDateString("hu-HU")}</p>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <div className="text-right">
+                                <p className="text-indigo-400 font-black">{tx.agreedHours} óra</p>
+                                <p className={`text-xs ${subText}`}>{tx.totalPrice} kredit</p>
+                              </div>
+                              <span className={`text-[10px] font-bold uppercase px-3 py-1.5 rounded-full ${tx.status === "COMPLETED" ? "bg-green-500/20 text-green-500"
+                                  : tx.status === "CANCELLED" ? "bg-red-500/20 text-red-400"
+                                    : "bg-yellow-500/20 text-yellow-500"
+                                }`}>
+                                {tx.status === "PENDING" ? "Folyamatban" : tx.status === "COMPLETED" ? "Teljesítve" : "Törölve"}
+                              </span>
+                            </div>
                           </div>
-                          <span className={`text-[10px] font-bold uppercase px-3 py-1.5 rounded-full ${tx.status === "COMPLETED" ? "bg-green-500/20 text-green-500"
-                              : tx.status === "CANCELLED" ? "bg-red-500/20 text-red-400"
-                                : "bg-yellow-500/20 text-yellow-500"
-                            }`}>
-                            {tx.status === "PENDING" ? "Folyamatban" : tx.status === "COMPLETED" ? "Teljesítve" : "Törölve"}
-                          </span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+
+                          {isPending && (isClient || isProvider) && (
+                            <div className="flex justify-end gap-2">
+                              {isClient && (
+                                <Button
+                                  size="sm"
+                                  disabled={isLoading}
+                                  onClick={() => handleCompleteTransaction(tx.id)}
+                                  className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-4 h-8 disabled:opacity-50"
+                                >
+                                  {isLoading ? <Loader2 size={12} className="animate-spin" /> : "Befejezés"}
+                                </Button>
+                              )}
+                              <Button
+                                size="sm"
+                                disabled={isLoading}
+                                onClick={() => handleCancelTransaction(tx.id)}
+                                className="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-4 h-8 disabled:opacity-50"
+                              >
+                                {isLoading ? <Loader2 size={12} className="animate-spin" /> : "Törlés"}
+                              </Button>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               ) : (
                 <div className={`py-20 text-center border-2 border-dashed rounded-3xl ${emptyBorder}`}>
