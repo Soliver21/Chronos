@@ -1,5 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { api } from "../services/api";
+import React, { createContext, useContext, useState } from 'react';
 
 // interface auth context típusához definiáljuk a típust, hogy milyen értékeket és függvényeket tartalmaz majd a context.
 interface AuthContextType {
@@ -17,8 +16,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Hookok a felhasználó és a token tárolására
   
-  // JAVÍTÁS: A useState-en BELÜL azonnal kiolvassuk a localStorage-ot. 
-  // Így az oldal frissítésekor (F5) nem lesz "üres" pillanat, a React egyből tudja, ki vagy.
+  // JAVÍTÁS: A useState-en BELÜL azonnal kiolvassuk a localStorage-ot !!!. 
   const [user, setUser] = useState<any | null>(() => {
     const savedUser = localStorage.getItem("user");
     return savedUser ? JSON.parse(savedUser) : null;
@@ -30,8 +28,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const [loading, setLoading] = useState(false);
 
-  // Ez a függvény elmenti a felhasználói adatokat és a token-t a localStorage-be, 
-  // frissíti a state-et, és beállítja az API globális fejlécét.
+  // Ez a függvény elmenti a felhasználói adatokat és a token-t a localStorage-be, majd beállítja a state-et és az API fejlécet.
   const login = (userData: any, token: string) => {
     localStorage.setItem("user", JSON.stringify(userData));
     localStorage.setItem("token", token);
