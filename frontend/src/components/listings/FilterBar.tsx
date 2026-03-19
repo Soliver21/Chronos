@@ -4,6 +4,7 @@ import { Button } from "../ui/button"
 import { X, SlidersHorizontal } from "lucide-react"
 import type { ListingFilter } from "../../types/listing.types"
 import { useTheme } from "../../context/ThemeContext"
+import { useToast } from "../../context/ToastContext"
 import { api } from "../../services/api"
 
 interface Category {
@@ -66,8 +67,19 @@ function FilterFields({ values, categories, onChange, isDark }: {
   )
 }
 
+function buildFilterSummary(filters: ListingFilter): string {
+  const parts: string[] = []
+  if (filters.search) parts.push(`"${filters.search}"`)
+  if (filters.category) parts.push(String(filters.category))
+  if (filters.type) parts.push(filters.type === "OFFER" ? "Ajánlat" : "Keresett")
+  if (filters.minPrice !== undefined) parts.push(`min. ${filters.minPrice} $/h`)
+  if (filters.maxPrice !== undefined) parts.push(`max. ${filters.maxPrice} $/h`)
+  return parts.join(", ")
+}
+
 export default function FilterBar({ onFilter, mobileOnly = false }: Props) {
   const { theme } = useTheme()
+  const { showToast } = useToast()
   const isDark = theme === "dark"
   const [filters, setFilters] = useState<ListingFilter>({})
   const [modalOpen, setModalOpen] = useState(false)
@@ -87,8 +99,22 @@ export default function FilterBar({ onFilter, mobileOnly = false }: Props) {
     setFilters(prev => ({ ...prev, [name]: v || undefined }))
   }
 
-  const handleApply = (close?: () => void) => { onFilter(filters); close?.() }
-  const handleReset = () => { setFilters({}); onFilter({}) }
+  const handleApply = (close?: () => void) => {
+    onFilter(filters)
+    close?.()
+    const summary = buildFilterSummary(filters)
+    if (summary) {
+      showToast(`Szűrő alkalmazva: ${summary}`, "info")
+    } else {
+      showToast("Szűrők alkalmazva – összes hirdetés látható.", "info")
+    }
+  }
+
+  const handleReset = () => {
+    setFilters({})
+    onFilter({})
+    showToast("Szűrők törölve.", "warning")
+  }
 
   const panelBg = isDark ? "bg-[#0f0f14] border-white/10" : "bg-white border-slate-200"
   const panelTitle = isDark ? "text-white" : "text-slate-900"

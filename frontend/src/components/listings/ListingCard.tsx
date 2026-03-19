@@ -7,6 +7,7 @@ import { Clock, DollarSign, Loader2 } from "lucide-react"
 import { createTransaction } from "../../services/transaction.service"
 import { useAuth } from "../../context/AuthContext"
 import { useTheme } from "../../context/ThemeContext"
+import { useToast } from "../../context/ToastContext"
 
 interface Props {
   listing: Listing
@@ -17,10 +18,10 @@ interface Props {
 export default function ListingCard({ listing, onClaimed }: Props) {
   const { user } = useAuth()
   const { theme } = useTheme()
+  const { showToast } = useToast()
   const isDark = theme === "dark"
   const [loading, setLoading] = useState(false)
   const [claimed, setClaimed] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   const categoryName = typeof listing.category === 'object'
     ? (listing.category as any).name
@@ -55,6 +56,7 @@ export default function ListingCard({ listing, onClaimed }: Props) {
       })
       setClaimed(true)
       onClaimed?.()
+      showToast(`"${listing.title}" sikeresen igényelve! ✓`, "success")
     } catch (err: any) {
       const raw = err.response?.data?.message || ""
       let msg = "Hiba történt az igénylésnél."
@@ -67,8 +69,7 @@ export default function ListingCard({ listing, onClaimed }: Props) {
       } else if (raw.includes("not found")) {
         msg = "A hirdetés nem található."
       }
-      setError(msg)
-      setTimeout(() => setError(null), 2500)
+      showToast(msg, "error")
     } finally {
       setLoading(false)
     }
@@ -107,9 +108,6 @@ export default function ListingCard({ listing, onClaimed }: Props) {
   const ownBtn = isDark
     ? "bg-white/5 text-gray-500 cursor-not-allowed"
     : "bg-slate-100 text-slate-400 cursor-not-allowed"
-  const errorBox = isDark
-    ? "bg-red-900/30 border-red-700/40 text-red-400"
-    : "bg-red-50 border-red-200 text-red-500"
 
   return (
     <Card className={`relative overflow-hidden rounded-2xl border shadow-sm hover:-translate-y-1 transition-all duration-300 h-full flex flex-col ${cardBg}`}>
@@ -161,31 +159,16 @@ export default function ListingCard({ listing, onClaimed }: Props) {
             <span className={`font-semibold text-sm transition-colors duration-300 ${userNameCls}`}>{listing.user?.name || firstName}</span>
           </div>
 
-          {error ? (
-            <div className={`w-full px-3 py-2 rounded-lg border text-[11px] font-medium text-center animate-in fade-in slide-in-from-top-1 ${errorBox}`}>
-              {error}
-            </div>
-          ) : (
-            <Button
-              className={`w-full rounded-lg font-semibold shadow-sm transition-all duration-300 ${
-                claimed
-                  ? claimedBtn
-                  : isOwn
-                  ? ownBtn
-                  : "bg-gradient-to-r from-[#667eea] to-[#764ba2] hover:shadow-md text-white"
+          <Button
+            className={`w-full rounded-lg font-semibold shadow-sm transition-all duration-300 ${claimed ? claimedBtn : isOwn ? ownBtn : "bg-gradient-to-r from-[#667eea] to-[#764ba2] hover:shadow-md text-white"
               }`}
-              onClick={handleClaim}
-              disabled={isOwn || loading || claimed}
-            >
-              {loading
-                ? <><Loader2 size={16} className="animate-spin mr-2" />Igénylés...</>
-                : claimed
-                ? "✓ Igényelve"
-                : isOwn
-                ? "Saját hirdetés"
-                : "Igénylés"}
-            </Button>
-          )}
+            onClick={handleClaim}
+            disabled={isOwn || loading || claimed}
+          >
+            {loading
+              ? <><Loader2 size={16} className="animate-spin mr-2" />Igénylés...</>
+              : claimed ? "✓ Igényelve" : isOwn ? "Saját hirdetés" : "Igénylés"}
+          </Button>
         </div>
       </div>
     </Card>

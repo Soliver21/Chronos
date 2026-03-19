@@ -6,6 +6,7 @@ import { Textarea } from "../ui/textarea"
 import { X, Plus } from "lucide-react"
 import { api } from "../../services/api"
 import { useTheme } from "../../context/ThemeContext"
+import { useToast } from "../../context/ToastContext"
 
 interface Category {
   id: number
@@ -19,6 +20,7 @@ interface Props {
 
 export default function CreateListingButton({ onCreated }: Props) {
   const { theme } = useTheme()
+  const { showToast } = useToast()
   const isDark = theme === "dark"
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -56,8 +58,11 @@ export default function CreateListingButton({ onCreated }: Props) {
       setForm({ title: "", description: "", pricePerHour: "", estimatedHours: "", categoryId: "", type: "OFFER" })
       setOpen(false)
       onCreated()
-    } catch (error) {
+      showToast("Hirdetés sikeresen létrehozva! 📋", "success")
+    } catch (error: any) {
       console.error("Error creating listing:", error)
+      const msg = error?.response?.data?.message || "Hiba történt a hirdetés létrehozásakor."
+      showToast(msg, "error")
     } finally {
       setLoading(false)
     }

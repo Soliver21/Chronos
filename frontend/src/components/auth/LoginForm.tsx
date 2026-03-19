@@ -7,14 +7,17 @@ import { Label } from "../ui/label";
 import { loginUser } from "../../services/auth.service";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
+import { useToast } from "../../context/ToastContext";
 import type { LoginType } from "../../types/user.types";
 
 const init: LoginType = { email: "", password: "" };
 
 export function LoginForm() {
   const [form, setForm] = useState<LoginType>(init);
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const { theme } = useTheme();
+  const { showToast } = useToast();
   const navigate = useNavigate();
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
@@ -27,16 +30,20 @@ export function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!form.email) return emailRef.current?.focus();
-    if (!form.password) return passwordRef.current?.focus();
+    if (!form.email) { emailRef.current?.focus(); return; }
+    if (!form.password) { passwordRef.current?.focus(); return; }
+    setLoading(true);
     try {
       const res = await loginUser(form);
       login(res.user, res.token);
+      showToast(`Üdvözlünk, ${res.user.name || "felhasználó"}! 👋`, "success");
       setForm(init);
       navigate("/dashboard");
     } catch (error) {
       console.error(error);
-      alert("Helytelen email vagy jelszó!");
+      showToast("Helytelen email vagy jelszó!", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -84,8 +91,12 @@ export function LoginForm() {
             </div>
           </CardContent>
           <CardFooter className="flex-col gap-4">
-            <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white h-11 font-bold">
-              Bejelentkezem
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white h-11 font-bold"
+            >
+              {loading ? "Bejelentkezés..." : "Bejelentkezem"}
             </Button>
             <Link to="/" className={`text-xs ${descCls} hover:underline`}>← Vissza a főoldalra</Link>
           </CardFooter>

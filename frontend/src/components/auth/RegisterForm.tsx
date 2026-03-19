@@ -7,14 +7,17 @@ import { Label } from "../ui/label";
 import { registUser } from '../../services/auth.service';
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
+import { useToast } from "../../context/ToastContext";
 import type { RegisterType } from '../../types/user.types';
 
 const init: RegisterType = { name: "", email: "", password: "" };
 
 const RegisterComp = () => {
   const [form, setForm] = useState<RegisterType>(init);
+  const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const { theme } = useTheme();
+  const { showToast } = useToast();
   const navigate = useNavigate();
   const isDark = theme === "dark";
 
@@ -29,17 +32,22 @@ const RegisterComp = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!form.name) return nameRef.current?.focus();
-    if (!form.email) return emailRef.current?.focus();
-    if (!form.password) return passwdRef.current?.focus();
+    if (!form.name) { nameRef.current?.focus(); return; }
+    if (!form.email) { emailRef.current?.focus(); return; }
+    if (!form.password) { passwdRef.current?.focus(); return; }
+    setLoading(true);
     try {
       const res = await registUser(form);
       login(res.user, res.token);
+      showToast("Sikeres regisztráció! Üdvözlünk a Chronos-ban 🎉", "success");
       setForm(init);
       navigate("/dashboard");
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("Hiba történt a regisztráció során.");
+      const msg = error?.response?.data?.message || "Hiba történt a regisztráció során.";
+      showToast(msg, "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -77,8 +85,12 @@ const RegisterComp = () => {
             ))}
           </CardContent>
           <CardFooter className="flex flex-col gap-3">
-            <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-11">
-              Regisztráció
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-11"
+            >
+              {loading ? "Regisztráció..." : "Regisztráció"}
             </Button>
             <div className={`text-sm text-center ${descCls}`}>
               Van már fiókod?{" "}

@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
+import { useToast } from "../context/ToastContext";
 import Dashbar from "../components/dashboard/Dashbar";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
@@ -25,6 +26,7 @@ const AVATAR_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
 const Profile = () => {
   const { user, login, token } = useAuth();
   const { theme } = useTheme();
+  const { showToast } = useToast();
   const isDark = theme === "dark";
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -37,7 +39,6 @@ const Profile = () => {
   const [formName, setFormName] = useState("");
   const [formBio, setFormBio] = useState("");
   const [saving, setSaving] = useState(false);
-  const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [txActionLoading, setTxActionLoading] = useState<number | null>(null);
 
@@ -62,6 +63,7 @@ const Profile = () => {
         setFormBio(userData.bio ?? "");
       } catch (err) {
         console.error("Hiba az adatok betöltésekor:", err);
+        showToast("Hiba az adatok betöltésekor.", "error");
       } finally {
         setLoading(false);
       }
@@ -76,10 +78,9 @@ const Profile = () => {
       const updated = await updateMyProfile({ name: formName, bio: formBio });
       setProfileData(updated);
       login(updated, token);
-      setSaveMsg("Profil sikeresen mentve!");
-      setTimeout(() => setSaveMsg(null), 3000);
+      showToast("Profil sikeresen mentve!", "success");
     } catch {
-      setSaveMsg("Hiba a mentés során.");
+      showToast("Hiba a mentés során.", "error");
     } finally {
       setSaving(false);
     }
@@ -97,25 +98,31 @@ const Profile = () => {
     setTransactions(txData);
   };
 
-  const handleCompleteTransaction = async (txId: number) => {
+  const handleCompleteTransaction = async (txId: number, title?: string) => {
     try {
       setTxActionLoading(txId);
       await completeTransaction(txId);
       await refreshAfterTxAction();
-    } catch (err) {
+      showToast(title ? `"${title}" tranzakció sikeresen lezárva! ✓` : "Tranzakció sikeresen lezárva!", "success");
+    } catch (err: any) {
       console.error("Hiba a tranzakció lezárásakor:", err);
+      const msg = err?.response?.data?.message || "Hiba a tranzakció lezárásakor.";
+      showToast(msg, "error");
     } finally {
       setTxActionLoading(null);
     }
   };
 
-  const handleCancelTransaction = async (txId: number) => {
+  const handleCancelTransaction = async (txId: number, title?: string) => {
     try {
       setTxActionLoading(txId);
       await cancelTransaction(txId);
       await refreshAfterTxAction();
-    } catch (err) {
+      showToast(title ? `"${title}" tranzakció törölve.` : "Tranzakció törölve.", "warning");
+    } catch (err: any) {
       console.error("Hiba a tranzakció törlésekor:", err);
+      const msg = err?.response?.data?.message || "Hiba a tranzakció törlésekor.";
+      showToast(msg, "error");
     } finally {
       setTxActionLoading(null);
     }
@@ -134,10 +141,9 @@ const Profile = () => {
       const updated = res.data.user;
       setProfileData(updated);
       login(updated, token!);
-      setSaveMsg("Profilkép sikeresen frissítve!");
-      setTimeout(() => setSaveMsg(null), 3000);
+      showToast("Profilkép sikeresen frissítve!", "success");
     } catch {
-      setSaveMsg("Hiba a profilkép feltöltésekor.");
+      showToast("Hiba a profilkép feltöltésekor.", "error");
     } finally {
       setAvatarUploading(false);
       e.target.value = "";
@@ -292,15 +298,10 @@ const Profile = () => {
                       <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1">Bizalmi szint</p>
                       <p className="font-bold text-indigo-400 text-sm tracking-wide">{profileData?.trustLevel || "NEWCOMER"}</p>
                     </div>
-                    <div className="flex flex-col items-end gap-2">
-                      {saveMsg && (
-                        <p className={`text-sm font-medium ${saveMsg.includes("Hiba") ? "text-red-400" : "text-green-400"}`}>{saveMsg}</p>
-                      )}
-                      <Button onClick={handleSave} disabled={saving}
-                        className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-10 h-12 font-bold shadow-lg shadow-indigo-600/20">
-                        {saving ? "Mentés..." : "Adatok mentése"}
-                      </Button>
-                    </div>
+                    <Button onClick={handleSave} disabled={saving}
+                      className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-10 h-12 font-bold shadow-lg shadow-indigo-600/20">
+                      {saving ? "Mentés..." : "Adatok mentése"}
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -344,12 +345,13 @@ const Profile = () => {
                     const isClient = tx.client?.id === user?.id;
                     const isPending = tx.status === "PENDING";
                     const isLoading = txActionLoading === tx.id;
+                    const txTitle = tx.listing?.title;
                     return (
                       <Card key={tx.id} className={txCardBg}>
                         <CardContent className="p-5 flex flex-col gap-4">
                           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                             <div>
-                              <p className={`font-bold ${isDark ? "text-white" : "text-gray-900"}`}>{tx.listing?.title ?? `Hirdetés #${tx.id}`}</p>
+                              <p className={`font-bold ${isDark ? "text-white" : "text-gray-900"}`}>{txTitle ?? `Hirdetés #${tx.id}`}</p>
                               <p className={`text-xs mt-1 ${subText}`}>{tx.client?.name} → {tx.provider?.name}</p>
                               <p className="text-xs text-gray-500 mt-0.5">{new Date(tx.createdAt).toLocaleDateString("hu-HU")}</p>
                             </div>
@@ -359,8 +361,8 @@ const Profile = () => {
                                 <p className={`text-xs ${subText}`}>{tx.totalPrice} kredit</p>
                               </div>
                               <span className={`text-[10px] font-bold uppercase px-3 py-1.5 rounded-full ${tx.status === "COMPLETED" ? "bg-green-500/20 text-green-500"
-                                  : tx.status === "CANCELLED" ? "bg-red-500/20 text-red-400"
-                                    : "bg-yellow-500/20 text-yellow-500"
+                                : tx.status === "CANCELLED" ? "bg-red-500/20 text-red-400"
+                                  : "bg-yellow-500/20 text-yellow-500"
                                 }`}>
                                 {tx.status === "PENDING" ? "Folyamatban" : tx.status === "COMPLETED" ? "Teljesítve" : "Törölve"}
                               </span>
@@ -373,7 +375,7 @@ const Profile = () => {
                                 <Button
                                   size="sm"
                                   disabled={isLoading}
-                                  onClick={() => handleCompleteTransaction(tx.id)}
+                                  onClick={() => handleCompleteTransaction(tx.id, txTitle)}
                                   className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-4 h-8 disabled:opacity-50"
                                 >
                                   {isLoading ? <Loader2 size={12} className="animate-spin" /> : "Befejezés"}
@@ -382,7 +384,7 @@ const Profile = () => {
                               <Button
                                 size="sm"
                                 disabled={isLoading}
-                                onClick={() => handleCancelTransaction(tx.id)}
+                                onClick={() => handleCancelTransaction(tx.id, txTitle)}
                                 className="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-4 h-8 disabled:opacity-50"
                               >
                                 {isLoading ? <Loader2 size={12} className="animate-spin" /> : "Törlés"}
