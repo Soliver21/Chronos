@@ -59,6 +59,7 @@ model ListingCategory {
   id       Int       @id @default(autoincrement())
   name     String    @unique
   slug     String    @unique
+  imageUrl String?
   listings Listing[]
 }
 

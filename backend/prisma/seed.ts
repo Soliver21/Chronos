@@ -18,47 +18,47 @@ async function main() {
   console.log('Creating categories...');
   
   const catHomeMaintenance = await prisma.listingCategory.create({
-    data: { name: 'Home & Maintenance', slug: 'home-maintenance' },
+    data: { name: 'Home & Maintenance', slug: 'home-maintenance', imageUrl: '/uploads/categories/Home%20%26%20Maintenance.jpg' },
   });
-  
+
   const catTutoringEducation = await prisma.listingCategory.create({
-    data: { name: 'Tutoring & Education', slug: 'tutoring-education' },
+    data: { name: 'Tutoring & Education', slug: 'tutoring-education', imageUrl: '/uploads/categories/Tutoring%20%26%20Education.jpg' },
   });
-  
+
   const catITTechHelp = await prisma.listingCategory.create({
-    data: { name: 'IT & Tech Help', slug: 'it-tech-help' },
+    data: { name: 'IT & Tech Help', slug: 'it-tech-help', imageUrl: '/uploads/categories/IT%20%26%20Tech%20Help.jpg' },
   });
-  
+
   const catErrandsDelivery = await prisma.listingCategory.create({
-    data: { name: 'Errands & Delivery', slug: 'errands-delivery' },
+    data: { name: 'Errands & Delivery', slug: 'errands-delivery', imageUrl: '/uploads/categories/Errands%20%26%20Delivery.jpg' },
   });
-  
+
   const catChildcareBabysitting = await prisma.listingCategory.create({
-    data: { name: 'Childcare & Babysitting', slug: 'childcare-babysitting' },
+    data: { name: 'Childcare & Babysitting', slug: 'childcare-babysitting', imageUrl: '/uploads/categories/Childcare%20%26%20Babysitting.jpg' },
   });
-  
+
   const catElderlyCare = await prisma.listingCategory.create({
-    data: { name: 'Elderly Care & Assistance', slug: 'elderly-care' },
+    data: { name: 'Elderly Care & Assistance', slug: 'elderly-care', imageUrl: '/uploads/categories/Elderly%20Care%20%26%20Assistance.jpg' },
   });
-  
+
   const catHealthWellness = await prisma.listingCategory.create({
-    data: { name: 'Health & Wellness', slug: 'health-wellness' },
+    data: { name: 'Health & Wellness', slug: 'health-wellness', imageUrl: '/uploads/categories/health%20%26%20wellness.jpg' },
   });
-  
+
   const catCreativeDesign = await prisma.listingCategory.create({
-    data: { name: 'Creative & Design', slug: 'creative-design' },
+    data: { name: 'Creative & Design', slug: 'creative-design', imageUrl: '/uploads/categories/Creative%20%26%20Design.jpg' },
   });
-  
+
   const catEventsEntertainment = await prisma.listingCategory.create({
-    data: { name: 'Events & Entertainment', slug: 'events-entertainment' },
+    data: { name: 'Events & Entertainment', slug: 'events-entertainment', imageUrl: '/uploads/categories/events%26entertainment.jpg' },
   });
-  
+
   const catVehiclesTransport = await prisma.listingCategory.create({
-    data: { name: 'Vehicles & Transport', slug: 'vehicles-transport' },
+    data: { name: 'Vehicles & Transport', slug: 'vehicles-transport', imageUrl: '/uploads/categories/vechile%26transport.png' },
   });
-  
+
   const catMiscellaneous = await prisma.listingCategory.create({
-    data: { name: 'Miscellaneous', slug: 'miscellaneous' },
+    data: { name: 'Miscellaneous', slug: 'miscellaneous', imageUrl: '/uploads/categories/vegyes.jpg' },
   });
 
   console.log(`✅ Created ${11} categories`);

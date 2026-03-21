@@ -8,7 +8,7 @@ export class CategoryService {
   async findAll() {
     return this.prisma.listingCategory.findMany({
       orderBy: { name: "asc" },
-      select: { id: true, name: true, slug: true },
+      select: { id: true, name: true, slug: true, imageUrl: true },
     });
   }
 }

@@ -13,7 +13,7 @@ export class ListingService {
       orderBy: { id: "desc" },
       include: {
         user: { select: { id: true, name: true, avatar: true, averageRating: true, trustLevel: true } },
-        category: { select: { id: true, name: true, slug: true } },
+        category: { select: { id: true, name: true, slug: true, imageUrl: true } },
       },
     });
   }
@@ -25,7 +25,7 @@ export class ListingService {
       orderBy: { id: "desc" },
       include: {
         user: { select: { id: true, name: true, avatar: true, averageRating: true, trustLevel: true } },
-        category: { select: { id: true, name: true, slug: true } },
+        category: { select: { id: true, name: true, slug: true, imageUrl: true } },
       },
     });
   }
@@ -35,7 +35,7 @@ export class ListingService {
       where: { id },
       include: {
         user: { select: { id: true, name: true, avatar: true, averageRating: true, trustLevel: true } },
-        category: { select: { id: true, name: true, slug: true } },
+        category: { select: { id: true, name: true, slug: true, imageUrl: true } },
       },
     });
     if (!listing) throw new NotFoundException("Listing not found");
@@ -47,7 +47,7 @@ export class ListingService {
       data: { ...dto, userId },
       include: {
         user: { select: { id: true, name: true, avatar: true, averageRating: true, trustLevel: true } },
-        category: { select: { id: true, name: true, slug: true } },
+        category: { select: { id: true, name: true, slug: true, imageUrl: true } },
       },
     });
   }
@@ -60,7 +60,7 @@ export class ListingService {
       data: dto,
       include: {
         user: { select: { id: true, name: true, avatar: true, averageRating: true, trustLevel: true } },
-        category: { select: { id: true, name: true, slug: true } },
+        category: { select: { id: true, name: true, slug: true, imageUrl: true } },
       },
     });
   }

@@ -13,4 +13,9 @@ export class UpdateCategoryDto {
   @IsString()
   @MinLength(2)
   slug?: string;
+
+  @ApiPropertyOptional({ example: '/uploads/categories/Home%20%26%20Maintenance.jpg', description: 'Category image URL' })
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
 }
