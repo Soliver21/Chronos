@@ -103,6 +103,10 @@ export class TransactionService {
           agreedHours: dto.agreedHours,
           totalPrice,
           status: TransactionStatus.PENDING,
+          listingTitle: listing.title,
+          listingDescription: listing.description,
+          listingImageUrl: listing.imageUrl,
+          listingType: listing.type,
         },
         include: {
           client: { select: { id: true, name: true, avatar: true } },

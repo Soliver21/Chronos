@@ -88,10 +88,15 @@ model Transaction {
 
   clientId   Int
   providerId Int
-  listingId  Int
+  listingId  Int?
 
   agreedHours Float
   totalPrice  Float
+
+  listingTitle       String?
+  listingDescription String?     @db.Text
+  listingImageUrl    String?
+  listingType        ListingType?
 
   status      TransactionStatus @default(PENDING)
   createdAt   DateTime          @default(now())
@@ -101,7 +106,7 @@ model Transaction {
 
   client   User    @relation("Client", fields: [clientId], references: [id], onDelete: Cascade)
   provider User    @relation("Provider", fields: [providerId], references: [id], onDelete: Cascade)
-  listing  Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listing  Listing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
 
   review   Review?
 }
