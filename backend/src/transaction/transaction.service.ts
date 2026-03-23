@@ -219,6 +219,10 @@ export class TransactionService {
 
       await this.updateTrustLevel(transaction.providerId);
 
+      if (transaction.listingId) {
+        await tx.listing.delete({ where: { id: transaction.listingId } });
+      }
+
       return updatedTransaction;
     }, { timeout: 15000 });
   }
