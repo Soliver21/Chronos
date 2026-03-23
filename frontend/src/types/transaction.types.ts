@@ -19,7 +19,11 @@ export interface Transaction {
   id: number;
   client: TransactionUser;
   provider: TransactionUser;
-  listing: TransactionListing;
+  listing: TransactionListing | null;
+  listingTitle?: string | null;
+  listingDescription?: string | null;
+  listingImageUrl?: string | null;
+  listingType?: "OFFER" | "REQUEST" | null;
   agreedHours: number;
   totalPrice: number;
   status: "PENDING" | "COMPLETED" | "CANCELLED";

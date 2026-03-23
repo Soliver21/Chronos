@@ -345,7 +345,7 @@ const Profile = () => {
                     const isClient = tx.client?.id === user?.id;
                     const isPending = tx.status === "PENDING";
                     const isLoading = txActionLoading === tx.id;
-                    const txTitle = tx.listing?.title;
+                    const txTitle = tx.listing?.title ?? tx.listingTitle;
                     return (
                       <Card key={tx.id} className={txCardBg}>
                         <CardContent className="p-5 flex flex-col gap-4">
