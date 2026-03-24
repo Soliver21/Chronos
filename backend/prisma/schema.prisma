@@ -93,10 +93,6 @@ model Transaction {
   agreedHours Float
   totalPrice  Float
 
-  listingTitle       String?
-  listingDescription String?     @db.Text
-  listingImageUrl    String?
-  listingType        ListingType?
 
   status      TransactionStatus @default(PENDING)
   createdAt   DateTime          @default(now())

@@ -91,9 +91,10 @@ async function main() {
       trustLevel: TrustLevel.VETERAN,
       bio: 'Tapasztalt kereskedő, 5 éve aktív a platformon. Megbízható partner!',
       avatar: 'https://i.pravatar.cc/150?img=12',
-      balance: 15,
+      balance: 120,
     },
   });
+  
 
   const user2 = await prisma.user.create({
     data: {
@@ -352,7 +353,73 @@ async function main() {
     },
   });
 
-  console.log(`✅ Created ${7} transactions`);
+  const transaction8 = await prisma.transaction.create({
+    data: {
+      clientId: user1.id,
+      providerId: listing4.userId,
+      listingId: listing4.id,
+      agreedHours: 2,
+      totalPrice: 100,
+      status: TransactionStatus.COMPLETED,
+    },
+  });
+
+  const transaction9 = await prisma.transaction.create({
+    data: {
+      clientId: user3.id,
+      providerId: listing2.userId,
+      listingId: listing2.id,
+      agreedHours: 1,
+      totalPrice: 50,
+      status: TransactionStatus.COMPLETED,
+    },
+  });
+
+  const transaction10 = await prisma.transaction.create({
+    data: {
+      clientId: user2.id,
+      providerId: listing4.userId,
+      listingId: listing4.id,
+      agreedHours: 3,
+      totalPrice: 150,
+      status: TransactionStatus.COMPLETED,
+    },
+  });
+
+  const transaction11 = await prisma.transaction.create({
+    data: {
+      clientId: user2.id,
+      providerId: listing1.userId,
+      listingId: listing1.id,
+      agreedHours: 1,
+      totalPrice: 50,
+      status: TransactionStatus.COMPLETED,
+    },
+  });
+
+  const transaction12 = await prisma.transaction.create({
+    data: {
+      clientId: user4.id,
+      providerId: listing3.userId,
+      listingId: listing3.id,
+      agreedHours: 2,
+      totalPrice: 60,
+      status: TransactionStatus.COMPLETED,
+    },
+  });
+
+  const transaction13 = await prisma.transaction.create({
+    data: {
+      clientId: user5.id,
+      providerId: listing1.userId,
+      listingId: listing1.id,
+      agreedHours: 1,
+      totalPrice: 50,
+      status: TransactionStatus.COMPLETED,
+    },
+  });
+
+  console.log(`✅ Created ${13} transactions`);
 
 
   console.log('Creating reviews...');
@@ -388,12 +455,66 @@ async function main() {
     data: {
       rating: 5,
       comment: 'Nagyon segítőkész srác volt! A költözésnél sokat segített, erős és megbízható. Időben érkezett és a munkát gyorsan végezte. Mindenkinek ajánlom!',
-      userId: user5.id,
+      userId: user2.id,
       transactionId: transaction5.id,
     },
   });
 
-  console.log(`✅ Created ${4} reviews`);
+  await prisma.review.create({
+    data: {
+      rating: 5,
+      comment: 'Anna kiváló tanár! Türelmes, érthetően magyaráz, és rengeteg hasznos példát hoz. Az első foglalkozás után máris sokat fejlődtem. Csak ajánlani tudom!',
+      userId: user1.id,
+      transactionId: transaction8.id,
+    },
+  });
+
+  await prisma.review.create({
+    data: {
+      rating: 4,
+      comment: 'Katalin szakszerűen javította a kerékpáromat, mindent alaposan átnézett. Kicsit tovább tartott a vártnál, de az eredménnyel nagyon elégedett vagyok.',
+      userId: user3.id,
+      transactionId: transaction9.id,
+    },
+  });
+
+  await prisma.review.create({
+    data: {
+      rating: 5,
+      comment: 'Tóth Anna az egyik legjobb oktatóm. Rugalmas, felkészült, és mindig az én tempómhoz igazodott. Folytatom vele a tanulást!',
+      userId: user2.id,
+      transactionId: transaction10.id,
+    },
+  });
+
+  await prisma.review.create({
+    data: {
+      rating: 4,
+      comment: 'János gyorsan és korrektül intézte az ügyet. A laptop pontosan olyan volt, ahogy leírta. Megbízható eladó, legközelebb is tőle vennék.',
+      userId: user2.id,
+      transactionId: transaction11.id,
+    },
+  });
+
+  await prisma.review.create({
+    data: {
+      rating: 5,
+      comment: 'A házi lekvár fenomenális volt! Természetes, édes, tele van ízzel. Már rendeltem is belőle másodszor. János nagyon kedves és megbízható.',
+      userId: user4.id,
+      transactionId: transaction12.id,
+    },
+  });
+
+  await prisma.review.create({
+    data: {
+      rating: 4,
+      comment: 'Rendben volt minden, a laptop jó állapotban volt. Kicsit nehéz volt az időpontot egyeztetni, de végül gördülékenyen ment. Ajánlom.',
+      userId: user5.id,
+      transactionId: transaction13.id,
+    },
+  });
+
+  console.log(`✅ Created ${10} reviews`);
 
 
   console.log('Creating website reviews...');
@@ -440,26 +561,6 @@ async function main() {
 
   console.log(`✅ Created ${5} website reviews`);
 
-  // Update averageRating for reviewed users (seed bypasses the service layer)
-  console.log('Updating user average ratings...');
-
-  await prisma.user.update({
-    where: { id: user3.id },
-    data: { averageRating: 5.00 }, // 1 review: 5
-  });
-
-  await prisma.user.update({
-    where: { id: user4.id },
-    data: { averageRating: 5.00 }, // 1 review: 5
-  });
-
-  await prisma.user.update({
-    where: { id: user5.id },
-    data: { averageRating: 4.50 }, // 2 reviews: (4 + 5) / 2
-  });
-
-  console.log('✅ Updated averageRating for 3 users');
-
   console.log('');
   console.log('🎉 Seeding completed successfully!');
   console.log('');
@@ -468,8 +569,8 @@ async function main() {
   console.log(`   - 1 admin user created`);
   console.log(`   - ${5} regular users created`);
   console.log(`   - ${10} listings created (${5} OFFER, ${5} REQUEST)`);
-  console.log(`   - ${7} transactions created`);
-  console.log(`   - ${4} reviews created`);
+  console.log(`   - ${13} transactions created`);
+  console.log(`   - ${10} reviews created`);
   console.log(`   - ${5} website reviews created`);
   console.log('');
   console.log('🔐 All users have the same password: Password123!');
@@ -478,7 +579,7 @@ async function main() {
   console.log('   0. admin@chronos.com (ADMIN, balance: 100)');
   console.log('');
   console.log('👥 Test Users:');
-  console.log('   1. kiss.janos@example.com (VETERAN, balance: 15)');
+  console.log('   1. kiss.janos@example.com (VETERAN, balance: 120)');
   console.log('   2. nagy.katalin@example.com (TRUSTED, balance: 12)');
   console.log('   3. szabo.peter@example.com (NEWCOMER, balance: 5)');
   console.log('   4. toth.anna@example.com (TRUSTED, balance: 10)');
