@@ -103,9 +103,6 @@ export class TransactionService {
           agreedHours: dto.agreedHours,
           totalPrice,
           status: TransactionStatus.PENDING,
-          listingTitle: listing.title,
-          listingDescription: listing.description,
-          listingImageUrl: listing.imageUrl,
           listingType: listing.type,
         },
         include: {
@@ -114,8 +111,6 @@ export class TransactionService {
           listing: {
             select: {
               id: true,
-              title: true,
-              description: true,
               pricePerHour: true,
               imageUrl: true,
               type: true,
@@ -141,8 +136,6 @@ export class TransactionService {
         listing: {
           select: {
             id: true,
-            title: true,
-            description: true,
             pricePerHour: true,
             imageUrl: true,
             type: true,
@@ -168,8 +161,6 @@ export class TransactionService {
           listing: {
             select: {
               id: true,
-              title: true,
-              description: true,
               pricePerHour: true,
               imageUrl: true,
             },
@@ -212,8 +203,6 @@ export class TransactionService {
           listing: {
             select: {
               id: true,
-              title: true,
-              description: true,
               pricePerHour: true,
               imageUrl: true,
             },
@@ -245,8 +234,6 @@ export class TransactionService {
           listing: {
             select: {
               id: true,
-              title: true,
-              description: true,
               pricePerHour: true,
               imageUrl: true,
             },
@@ -292,8 +279,6 @@ export class TransactionService {
           listing: {
             select: {
               id: true,
-              title: true,
-              description: true,
               pricePerHour: true,
               imageUrl: true,
             },
@@ -321,8 +306,6 @@ export class TransactionService {
         listing: {
           select: {
             id: true,
-            title: true,
-            description: true,
             pricePerHour: true,
             imageUrl: true,
             type: true,
