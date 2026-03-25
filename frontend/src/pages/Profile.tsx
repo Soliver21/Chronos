@@ -103,7 +103,7 @@ const Profile = () => {
       setTxActionLoading(txId);
       await completeTransaction(txId);
       await refreshAfterTxAction();
-      showToast(title ? `"${title}" tranzakció sikeresen lezárva! ✓` : "Tranzakció sikeresen lezárva!", "success");
+      showToast(title ? `"${title}" tranzakció sikeresen lezárva!` : "Tranzakció sikeresen lezárva!", "success");
     } catch (err: any) {
       console.error("Hiba a tranzakció lezárásakor:", err);
       const msg = err?.response?.data?.message || "Hiba a tranzakció lezárásakor.";
@@ -375,7 +375,7 @@ const Profile = () => {
                                 <Button
                                   size="sm"
                                   disabled={isLoading}
-                                  onClick={() => handleCompleteTransaction(tx.id, txTitle)}
+                                  onClick={() => handleCompleteTransaction(tx.id)}
                                   className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-4 h-8 disabled:opacity-50"
                                 >
                                   {isLoading ? <Loader2 size={12} className="animate-spin" /> : "Befejezés"}
@@ -384,7 +384,7 @@ const Profile = () => {
                               <Button
                                 size="sm"
                                 disabled={isLoading}
-                                onClick={() => handleCancelTransaction(tx.id, txTitle)}
+                                onClick={() => handleCancelTransaction(tx.id)}
                                 className="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-4 h-8 disabled:opacity-50"
                               >
                                 {isLoading ? <Loader2 size={12} className="animate-spin" /> : "Törlés"}

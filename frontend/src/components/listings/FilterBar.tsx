@@ -24,11 +24,11 @@ function FilterFields({ values, categories, onChange, isDark }: {
   onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void
   isDark: boolean
 }) {
-  const labelCls = isDark ? "text-gray-400" : "text-slate-700"
-  const inputCls = isDark ? "bg-[#1a1a1f] border-white/10 text-white" : "border-slate-300 text-black bg-white"
+  const labelCls = isDark ? "text-gray-400 transition-colors duration-300" : "text-slate-700 transition-colors duration-300"
+  const inputCls = isDark ? "bg-[#1a1a1f] border-white/10 text-white transition-colors duration-300" : "border-slate-300 text-black bg-white transition-colors duration-300"
   const selectCls = isDark
-    ? "w-full px-3 py-2 rounded-lg border border-white/10 bg-[#1a1a1f] text-white text-sm focus:ring-2 focus:ring-indigo-500"
-    : "w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 text-black bg-white"
+    ? "w-full px-3 py-2 rounded-lg border border-white/10 bg-[#1a1a1f] text-white text-sm focus:ring-2 focus:ring-indigo-500 transition-colors duration-300"
+    : "w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-blue-500 text-black bg-white transition-colors duration-300"
 
   return (
     <div className="space-y-4">
@@ -116,10 +116,10 @@ export default function FilterBar({ onFilter, mobileOnly = false }: Props) {
     showToast("Szűrők törölve.", "warning")
   }
 
-  const panelBg = isDark ? "bg-[#0f0f14] border-white/10" : "bg-white border-slate-200"
-  const panelTitle = isDark ? "text-white" : "text-slate-900"
-  const resetBtn = isDark ? "bg-red-900/30 hover:bg-red-900/50 text-red-400 border-red-900/50" : "bg-red-50 hover:bg-red-100 text-red-600 border-red-200"
-  const mobileBtn = isDark ? "bg-white/5 text-white border-white/10 hover:bg-white/10" : "bg-white text-black border-slate-300 hover:bg-slate-50"
+  const panelBg = isDark ? "bg-[#0f0f14] border-white/10 transition-colors duration-300" : "bg-white border-slate-200 transition-colors duration-300"
+  const panelTitle = isDark ? "text-white transition-colors duration-300" : "text-slate-900 transition-colors duration-300"
+  const resetBtn = isDark ? "bg-red-900/30 hover:bg-red-900/50 text-red-400 border-red-900/50 transition-colors duration-300" : "bg-red-50 hover:bg-red-100 text-red-600 border-red-200 transition-colors duration-300"
+  const mobileBtn = isDark ? "bg-white/5 text-white border-white/10 hover:bg-white/10 transition-colors duration-300" : "bg-white text-black border-slate-300 hover:bg-slate-50 transition-colors duration-300"
 
   if (mobileOnly) {
     return (

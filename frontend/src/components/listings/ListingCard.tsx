@@ -56,14 +56,18 @@ export default function ListingCard({ listing, onClaimed }: Props) {
       })
       setClaimed(true)
       onClaimed?.()
-      showToast(`"${listing.title}" sikeresen igényelve! ✓`, "success")
+      showToast(`"${listing.title}" sikeresen igényelve!`, "success")
     } catch (err: any) {
       const raw = err.response?.data?.message || ""
       let msg = "Hiba történt az igénylésnél."
       if (raw.includes("Insufficient credits")) {
         const required = raw.match(/Required: (\d+)/)?.[1]
         const available = raw.match(/Available: (\d+)/)?.[1]
-        msg = `Nincs elég kredited. Szükséges: ${required}, elérhető: ${available}.`
+        if (required && available) {
+          msg = `Nincs elegendő egyenleged az igényléshez. Szükséges: ${required} kredit, jelenlegi egyenleged: ${available} kredit.`
+        } else {
+          msg = "Nincs elegendő egyenleged az igénylés teljesítéséhez."
+        }
       } else if (raw.includes("own listing")) {
         msg = "Saját hirdetést nem igényelhetsz."
       } else if (raw.includes("not found")) {

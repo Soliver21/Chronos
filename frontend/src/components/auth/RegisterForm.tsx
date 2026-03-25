@@ -39,7 +39,7 @@ const RegisterComp = () => {
     try {
       const res = await registUser(form);
       login(res.user, res.token);
-      showToast("Sikeres regisztráció! Üdvözlünk a Chronos-ban 🎉", "success");
+      showToast("Sikeres regisztráció! Üdvözlünk a Chronos-ban", "success");
       setForm(init);
       navigate("/dashboard");
     } catch (error: any) {

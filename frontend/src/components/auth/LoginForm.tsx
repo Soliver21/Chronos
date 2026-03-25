@@ -36,7 +36,7 @@ export function LoginForm() {
     try {
       const res = await loginUser(form);
       login(res.user, res.token);
-      showToast(`Üdvözlünk, ${res.user.name || "felhasználó"}! 👋`, "success");
+      showToast(`Üdvözlünk, ${res.user.name || "felhasználó"}!`, "success");
       setForm(init);
       navigate("/dashboard");
     } catch (error) {

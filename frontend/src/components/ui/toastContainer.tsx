@@ -1,13 +1,6 @@
 import { useEffect, useState } from "react";
 import { useToast, type Toast } from "../../context/ToastContext";
-import { X, CheckCircle, XCircle, Info, AlertTriangle } from "lucide-react";
-
-const icons = {
-    success: <CheckCircle size={18} className="shrink-0" />,
-    error: <XCircle size={18} className="shrink-0" />,
-    warning: <AlertTriangle size={18} className="shrink-0" />,
-    info: <Info size={18} className="shrink-0" />,
-};
+import { X } from "lucide-react";
 
 const styles = {
     success: "bg-green-600 text-white border-green-500",
@@ -46,7 +39,6 @@ function ToastItem({ toast }: { toast: Toast }) {
                 ${visible ? "opacity-100 translate-x-0" : "opacity-0 translate-x-10"}
       `}
         >
-            {icons[toast.type]}
             <span className="flex-1 leading-snug">{toast.message}</span>
             <button
                 onClick={handleClose}
