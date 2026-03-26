@@ -14,7 +14,7 @@ import { Star, Loader2 } from "lucide-react";
 import { getUserById, getUserStats, updateMyProfile } from "../services/user.service";
 import { getMyListings } from "../services/listing.service";
 import { getMyTransactions, completeTransaction, cancelTransaction } from "../services/transaction.service";
-import { getUserReviews, type UserReview } from "../services/rating.service";
+import { getUserReviews, createReview, type UserReview } from "../services/rating.service";
 import { ThemeSwitch } from "../components/ui/theme-switch";
 import { api } from "../services/api";
 import type { User, UserStats } from "../types/user.types";
@@ -22,6 +22,21 @@ import type { Listing } from "../types/listing.types";
 import type { Transaction } from "../types/transaction.types";
 
 const AVATAR_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
+
+const StarPicker = ({ value, onChange }: { value: number; onChange: (v: number) => void }) => (
+  <div className="flex gap-1">
+    {[1, 2, 3, 4, 5].map((star) => (
+      <Star
+        key={star}
+        size={20}
+        onClick={() => onChange(star)}
+        className={`cursor-pointer transition-colors ${
+          star <= value ? "text-yellow-400 fill-yellow-400" : "text-gray-500"
+        } hover:text-yellow-300 hover:fill-yellow-300`}
+      />
+    ))}
+  </div>
+);
 
 const Profile = () => {
   const { user, login, token } = useAuth();
@@ -41,6 +56,13 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [txActionLoading, setTxActionLoading] = useState<number | null>(null);
+
+  // Értékelés írás állapotok (tranzakciónként)
+  const [reviewOpen, setReviewOpen] = useState<number | null>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewedTxIds, setReviewedTxIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     if (!user?.id) return;
@@ -98,14 +120,13 @@ const Profile = () => {
     setTransactions(txData);
   };
 
-  const handleCompleteTransaction = async (txId: number, title?: string) => {
+  const handleCompleteTransaction = async (txId: number) => {
     try {
       setTxActionLoading(txId);
       await completeTransaction(txId);
       await refreshAfterTxAction();
-      showToast(title ? `"${title}" tranzakció sikeresen lezárva!` : "Tranzakció sikeresen lezárva!", "success");
+      showToast("Tranzakció sikeresen lezárva!", "success");
     } catch (err: any) {
-      console.error("Hiba a tranzakció lezárásakor:", err);
       const msg = err?.response?.data?.message || "Hiba a tranzakció lezárásakor.";
       showToast(msg, "error");
     } finally {
@@ -113,14 +134,13 @@ const Profile = () => {
     }
   };
 
-  const handleCancelTransaction = async (txId: number, title?: string) => {
+  const handleCancelTransaction = async (txId: number) => {
     try {
       setTxActionLoading(txId);
       await cancelTransaction(txId);
       await refreshAfterTxAction();
-      showToast(title ? `"${title}" tranzakció törölve.` : "Tranzakció törölve.", "warning");
+      showToast("Tranzakció törölve.", "warning");
     } catch (err: any) {
-      console.error("Hiba a tranzakció törlésekor:", err);
       const msg = err?.response?.data?.message || "Hiba a tranzakció törlésekor.";
       showToast(msg, "error");
     } finally {
@@ -128,6 +148,36 @@ const Profile = () => {
     }
   };
 
+  const handleSubmitReview = async (txId: number) => {
+    try {
+      setReviewSubmitting(true);
+      await createReview({
+        transactionId: txId,
+        rating: reviewRating,
+        comment: reviewComment.trim() || undefined,
+      });
+      setReviewedTxIds((prev) => new Set(prev).add(txId));
+      setReviewOpen(null);
+      setReviewRating(5);
+      setReviewComment("");
+      // Frissítjük az értékelések listáját és a statisztikákat
+      if (user?.id) {
+        const [reviewsData, statsData] = await Promise.all([
+          getUserReviews(user.id),
+          getUserStats(user.id),
+        ]);
+        setReviews(reviewsData);
+        setStats(statsData);
+      }
+      showToast("Értékelés sikeresen elküldve!", "success");
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || "Hiba az értékelés beküldésekor.";
+      showToast(msg, "error");
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
+   // Profilkép feltöltésese
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -150,7 +200,7 @@ const Profile = () => {
     }
   };
 
-  // Téma osztályok
+  // Téma osztályok (rövidíteni kéne)
   const pageBg = isDark ? "bg-[#0a0a0a] text-white" : "bg-white text-gray-900";
   const cardBg = isDark ? "bg-[#0f0f14] border-white/10" : "bg-white border-gray-200";
   const cardHeaderBg = isDark ? "border-white/5 bg-white/5" : "border-gray-100 bg-gray-50";
@@ -164,6 +214,8 @@ const Profile = () => {
   const txCardBg = isDark ? "bg-[#0f0f14] border-white/10" : "bg-white border-gray-200";
   const emptyBorder = isDark ? "border-white/10 bg-white/5" : "border-gray-200 bg-gray-50";
   const typeBadge = isDark ? "bg-white/5 text-gray-400" : "bg-gray-100 text-gray-500";
+  const reviewFormBg = isDark ? "bg-white/5 border-white/10" : "bg-gray-50 border-gray-200";
+  const reviewTextarea = isDark ? "bg-[#1a1a1f] border-white/10 text-white placeholder-gray-600" : "bg-white border-gray-200 text-gray-900 placeholder-gray-400";
 
   const tabTriggerCls = `rounded-none border-b-2 border-transparent px-3 pb-3 pt-2 font-semibold text-sm text-gray-500
     data-[state=active]:border-indigo-500 ${isDark ? "data-[state=active]:text-white" : "data-[state=active]:text-gray-900"}
@@ -195,6 +247,7 @@ const Profile = () => {
       <main className="flex-1 flex flex-col items-center w-full p-4 sm:p-6 pt-8 pb-10">
         <div className="w-full max-w-6xl space-y-8">
 
+          {/* Fejléc */}
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 pb-2">
             <div className="flex flex-col space-y-1">
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-normal">
@@ -205,6 +258,7 @@ const Profile = () => {
             <div className="pt-1"><ThemeSwitch /></div>
           </div>
 
+          {/* Statisztikai kártyák */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {statCards.map((stat, i) => (
               <Card key={i} className={`shadow-xl transition-all hover:border-indigo-500/30 ${cardBg}`}>
@@ -233,7 +287,6 @@ const Profile = () => {
                   <CardTitle className="text-lg font-bold">Profil adatok szerkesztése</CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 sm:p-8 space-y-6 sm:space-y-8">
-
                   {/* Avatar */}
                   <div className="flex justify-center w-full">
                     <div className="relative group">
@@ -246,12 +299,11 @@ const Profile = () => {
                           {(profileData?.name || user?.name || "?").substring(0, 1).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-
-                      {/* Kamera gomb */}
                       <button
                         onClick={() => fileInputRef.current?.click()}
                         disabled={avatarUploading}
                         className={`absolute bottom-1 right-1 bg-indigo-600 p-2 rounded-full border-2 hover:bg-indigo-500 transition-colors disabled:opacity-50 ${isDark ? "border-[#0f0f14]" : "border-white"}`}
+                        title="Profilkép módosítása"
                       >
                         {avatarUploading ? (
                           <Loader2 size={16} className="text-white animate-spin" />
@@ -262,15 +314,7 @@ const Profile = () => {
                           </svg>
                         )}
                       </button>
-
-                      {/* Rejtett file input */}
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleAvatarChange}
-                      />
+                      <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
                     </div>
                   </div>
 
@@ -281,7 +325,7 @@ const Profile = () => {
                         className={`h-12 focus:ring-2 focus:ring-indigo-500 transition-all ${inputBg}`} />
                     </div>
                     <div className="grid gap-3">
-                      <Label className={`font-semibold ml-1 ${labelCls}`}>E-mail (Nem módosítható)</Label>
+                      <Label className={`font-semibold ml-1 ${labelCls}`}>E-mail cím (nem módosítható)</Label>
                       <Input value={user?.email} readOnly className={`h-12 ${inputReadonly}`} />
                     </div>
                   </div>
@@ -289,7 +333,7 @@ const Profile = () => {
                   <div className="grid gap-3">
                     <Label className={`font-semibold ml-1 ${labelCls}`}>Bemutatkozás</Label>
                     <Textarea value={formBio} onChange={(e) => setFormBio(e.target.value)}
-                      placeholder="Mesélj magadról néhány mondatban..."
+                      placeholder="Meséljen magáról néhány mondatban..."
                       className={`min-h-[120px] focus:ring-2 focus:ring-indigo-500 transition-all resize-none ${textareaBg}`} />
                   </div>
 
@@ -330,28 +374,33 @@ const Profile = () => {
                 )) : (
                   <div className={`col-span-full py-20 text-center border-2 border-dashed rounded-3xl ${emptyBorder}`}>
                     <div className="text-4xl mb-4">📦</div>
-                    <p className={`font-medium ${subText}`}>Még nincsenek feltöltött hirdetéseid.</p>
+                    <p className={`font-medium ${subText}`}>Még nincsenek feltöltött hirdetések.</p>
                   </div>
                 )}
               </div>
             </TabsContent>
 
-            {/* ── TRANZAKCIÓK ── */}
+            {/* TRANZAKCIÓK */}
             <TabsContent value="transactions" className="focus-visible:outline-none">
               {transactions.length > 0 ? (
                 <div className="space-y-4">
                   {transactions.map((tx: Transaction) => {
-                    const isProvider = tx.provider?.id === user?.id;
                     const isClient = tx.client?.id === user?.id;
+                    const isProvider = tx.provider?.id === user?.id;
                     const isPending = tx.status === "PENDING";
+                    const isCompleted = tx.status === "COMPLETED";
                     const isLoading = txActionLoading === tx.id;
                     const txTitle = tx.listing?.title ?? tx.listingTitle;
+                    // Értékelés írható: lezárt tranzakció, ahol részt vett a user, és még nem értékelt
+                    const canReview = isCompleted && (isClient || isProvider) && !reviewedTxIds.has(tx.id);
+                    const isReviewOpen = reviewOpen === tx.id;
+
                     return (
                       <Card key={tx.id} className={txCardBg}>
                         <CardContent className="p-5 flex flex-col gap-4">
                           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                             <div>
-                              <p className={`font-bold ${isDark ? "text-white" : "text-gray-900"}`}>{txTitle ?? `Hirdetés #${tx.id}`}</p>
+                              <p className={`font-bold ${isDark ? "text-white" : "text-gray-900"}`}>{txTitle ?? `Tranzakció #${tx.id}`}</p>
                               <p className={`text-xs mt-1 ${subText}`}>{tx.client?.name} → {tx.provider?.name}</p>
                               <p className="text-xs text-gray-500 mt-0.5">{new Date(tx.createdAt).toLocaleDateString("hu-HU")}</p>
                             </div>
@@ -360,36 +409,81 @@ const Profile = () => {
                                 <p className="text-indigo-400 font-black">{tx.agreedHours} óra</p>
                                 <p className={`text-xs ${subText}`}>{tx.totalPrice} kredit</p>
                               </div>
-                              <span className={`text-[10px] font-bold uppercase px-3 py-1.5 rounded-full ${tx.status === "COMPLETED" ? "bg-green-500/20 text-green-500"
+                              <span className={`text-[10px] font-bold uppercase px-3 py-1.5 rounded-full ${
+                                tx.status === "COMPLETED" ? "bg-green-500/20 text-green-500"
                                 : tx.status === "CANCELLED" ? "bg-red-500/20 text-red-400"
-                                  : "bg-yellow-500/20 text-yellow-500"
-                                }`}>
+                                : "bg-yellow-500/20 text-yellow-500"
+                              }`}>
                                 {tx.status === "PENDING" ? "Folyamatban" : tx.status === "COMPLETED" ? "Teljesítve" : "Törölve"}
                               </span>
                             </div>
                           </div>
 
+                          {/* Folyamatban lévő tranzakció gombjai */}
                           {isPending && (isClient || isProvider) && (
                             <div className="flex justify-end gap-2">
                               {isClient && (
-                                <Button
-                                  size="sm"
-                                  disabled={isLoading}
+                                <Button size="sm" disabled={isLoading}
                                   onClick={() => handleCompleteTransaction(tx.id)}
-                                  className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-4 h-8 disabled:opacity-50"
-                                >
+                                  className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-4 h-8">
                                   {isLoading ? <Loader2 size={12} className="animate-spin" /> : "Befejezés"}
                                 </Button>
                               )}
-                              <Button
-                                size="sm"
-                                disabled={isLoading}
+                              <Button size="sm" disabled={isLoading}
                                 onClick={() => handleCancelTransaction(tx.id)}
-                                className="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-4 h-8 disabled:opacity-50"
-                              >
+                                className="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-4 h-8">
                                 {isLoading ? <Loader2 size={12} className="animate-spin" /> : "Törlés"}
                               </Button>
                             </div>
+                          )}
+
+                          {/* Értékelés gomb / form – lezárt tranzakcióknál */}
+                          {canReview && (
+                            <div>
+                              {!isReviewOpen ? (
+                                <div className="flex justify-end">
+                                  <button
+                                    onClick={() => { setReviewOpen(tx.id); setReviewRating(5); setReviewComment(""); }}
+                                    className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition-colors"
+                                  >
+                                    <Star size={13} className="fill-indigo-400" /> Értékelés írása
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className={`rounded-xl border p-4 space-y-3 ${reviewFormBg}`}>
+                                  <p className={`text-sm font-semibold ${isDark ? "text-white" : "text-gray-900"}`}>
+                                    Értékelje ezt a tranzakciót
+                                  </p>
+                                  <StarPicker value={reviewRating} onChange={setReviewRating} />
+                                  <textarea
+                                    value={reviewComment}
+                                    onChange={(e) => setReviewComment(e.target.value)}
+                                    placeholder="Írja le tapasztalatait (nem kötelező)..."
+                                    rows={2}
+                                    className={`w-full px-3 py-2 rounded-lg border text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${reviewTextarea}`}
+                                  />
+                                  <div className="flex gap-2 justify-end">
+                                    <button
+                                      onClick={() => setReviewOpen(null)}
+                                      className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${isDark ? "text-gray-400 hover:text-white hover:bg-white/10" : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"}`}
+                                    >
+                                      Mégsem
+                                    </button>
+                                    <button
+                                      onClick={() => handleSubmitReview(tx.id)}
+                                      disabled={reviewSubmitting}
+                                      className="text-xs px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-colors disabled:opacity-50"
+                                    >
+                                      {reviewSubmitting ? "Küldés..." : "Beküldés"}
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {reviewedTxIds.has(tx.id) && (
+                            <p className="text-xs text-green-500 font-medium text-right">✓ Értékelés elküldve</p>
                           )}
                         </CardContent>
                       </Card>
@@ -404,7 +498,7 @@ const Profile = () => {
               )}
             </TabsContent>
 
-            {/* ── ÉRTÉKELÉSEK ── */}
+            {/* ÉRTÉKELÉSEK */}
             <TabsContent value="reviews" className="focus-visible:outline-none">
               {reviews.length > 0 ? (
                 <div className="space-y-4">
@@ -431,7 +525,8 @@ const Profile = () => {
                 </div>
               ) : (
                 <div className={`py-20 text-center border-2 border-dashed rounded-3xl ${emptyBorder}`}>
-                  <p className={`font-medium ${subText}`}>Még nem kaptál értékelést.</p>
+                  <div className="text-4xl mb-4">⭐</div>
+                  <p className={`font-medium ${subText}`}>Még nem érkezett értékelés.</p>
                   <p className={`text-xs mt-1 ${subText}`}>Az értékelések lezárt tranzakciók után jelennek meg.</p>
                 </div>
               )}

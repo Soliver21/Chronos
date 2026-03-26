@@ -16,21 +16,16 @@ const Dashbar = () => {
 
   const navBg = isDark ? "bg-[#0f0f14]/90 border-white/5" : "bg-white/90 border-gray-200";
   const nameCls = isDark ? "text-white" : "text-gray-900";
-  const emailCls = isDark ? "text-gray-500" : "text-gray-500";
+  const emailCls = "text-gray-500";
   const profileBtnCls = isDark ? "border-white/10 text-gray-300 hover:bg-white/5" : "border-gray-200 text-gray-700 hover:bg-gray-100";
   const mobileBg = isDark ? "bg-[#0f0f14] border-white/5" : "bg-white border-gray-100";
   const hamburgerColor = isDark ? "bg-gray-300" : "bg-gray-600";
 
-  // Nav link – aktív / nem aktív stílus
   const navLink = (path: string, label: string, icon: string) => {
     const active = isActive(path);
     const baseCls = "text-sm font-medium transition-all flex items-center gap-1.5 px-3 py-1.5 rounded-lg";
-    const activeCls = isDark
-      ? "text-white bg-white/10 font-semibold"
-      : "text-gray-900 bg-gray-100 font-semibold";
-    const inactiveCls = isDark
-      ? "text-gray-500 hover:text-white hover:bg-white/5"
-      : "text-gray-500 hover:text-gray-900 hover:bg-gray-100";
+    const activeCls = isDark ? "text-white bg-white/10 font-semibold" : "text-gray-900 bg-gray-100 font-semibold";
+    const inactiveCls = isDark ? "text-gray-500 hover:text-white hover:bg-white/5" : "text-gray-500 hover:text-gray-900 hover:bg-gray-100";
     return (
       <Link to={path} className={`${baseCls} ${active ? activeCls : inactiveCls}`}>
         <i className={`bi ${icon}`} />
@@ -40,7 +35,6 @@ const Dashbar = () => {
     );
   };
 
-  // Mobil nav link
   const mobileNavLink = (path: string, label: string, icon: string) => {
     const active = isActive(path);
     const baseCls = "flex items-center gap-2 py-2.5 px-3 rounded-lg text-sm transition-colors";
@@ -59,7 +53,7 @@ const Dashbar = () => {
     <nav className={`sticky top-0 z-50 backdrop-blur-md border-b transition-colors duration-300 ${navBg}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-8 flex justify-between items-center h-14">
 
-        {/* Logo + nav linkek */}
+        {/* Logo + navigációs linkek */}
         <div className="flex items-center gap-2">
           <h2
             className="text-xl font-extrabold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent cursor-pointer select-none mr-2"
@@ -67,15 +61,16 @@ const Dashbar = () => {
           >
             Chronos.
           </h2>
-          <div className="hidden md:flex items-center gap-1">
+          {/* lg-nál törjük mobilra (1024px) */}
+          <div className="hidden lg:flex items-center gap-1">
             {navLink("/", "Főoldal", "bi-house-door")}
-            {navLink("/dashboard", "Dashboard", "bi-speedometer2")}
+            {navLink("/dashboard", "Vezérlőpult", "bi-speedometer2")}
             {navLink("/listings", "Hirdetések", "bi-card-list")}
           </div>
         </div>
 
         {/* Desktop jobb oldal */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden lg:flex items-center gap-3">
           <button
             onClick={toggleTheme}
             className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
@@ -99,7 +94,7 @@ const Dashbar = () => {
                 : profileBtnCls
             }`}
           >
-            <i className="bi bi-person" /> Profil
+            <i className="bi bi-person" /> Profilom
             {isActive("/profile") && <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 inline-block" />}
           </Link>
 
@@ -107,15 +102,15 @@ const Dashbar = () => {
             onClick={logout}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600/80 hover:bg-red-600 text-white text-sm font-semibold transition-colors"
           >
-            <i className="bi bi-box-arrow-right" /> Logout
+            <i className="bi bi-box-arrow-right" /> Kilépés
           </button>
         </div>
 
-        {/* Hamburger */}
+        {/* Hamburger – lg alatt látható */}
         <button
-          className="md:hidden flex flex-col justify-center items-center w-9 h-9 gap-[5px] rounded-lg hover:bg-white/5 transition-colors"
+          className="lg:hidden flex flex-col justify-center items-center w-9 h-9 gap-[5px] rounded-lg hover:bg-white/5 transition-colors"
           onClick={() => setOpen(!open)}
-          aria-label="Menü"
+          aria-label="Menü megnyitása"
         >
           <span className={`block w-5 h-0.5 transition-all duration-300 ${hamburgerColor} ${open ? "rotate-45 translate-y-[7px]" : ""}`} />
           <span className={`block w-5 h-0.5 transition-all duration-300 ${hamburgerColor} ${open ? "opacity-0" : ""}`} />
@@ -123,11 +118,11 @@ const Dashbar = () => {
         </button>
       </div>
 
-      {/* Mobile menü */}
-      <div className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${open ? "max-h-96" : "max-h-0"}`}>
+      {/* Mobil menü */}
+      <div className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${open ? "max-h-96" : "max-h-0"}`}>
         <div className={`border-t px-4 pb-4 space-y-1 ${mobileBg}`}>
           {mobileNavLink("/", "Főoldal", "bi-house-door")}
-          {mobileNavLink("/dashboard", "Dashboard", "bi-speedometer2")}
+          {mobileNavLink("/dashboard", "Vezérlőpult", "bi-speedometer2")}
           {mobileNavLink("/listings", "Hirdetések", "bi-card-list")}
 
           <div className="pt-2 border-t border-white/5">
@@ -140,7 +135,7 @@ const Dashbar = () => {
                 <p className={`text-xs leading-tight ${emailCls}`}>{user?.email}</p>
               </div>
             </div>
-            {mobileNavLink("/profile", "Profil", "bi-person")}
+            {mobileNavLink("/profile", "Profilom", "bi-person")}
             <button
               onClick={toggleTheme}
               className={`w-full flex items-center gap-2 py-2.5 px-3 rounded-lg text-sm transition-colors ${
@@ -154,7 +149,7 @@ const Dashbar = () => {
               onClick={() => { logout(); setOpen(false); }}
               className="w-full mt-1 py-2.5 px-3 rounded-lg bg-red-600/80 hover:bg-red-600 text-white text-sm font-semibold text-left transition-colors flex items-center gap-2"
             >
-              <i className="bi bi-box-arrow-right" /> Logout
+              <i className="bi bi-box-arrow-right" /> Kilépés
             </button>
           </div>
         </div>
