@@ -90,11 +90,11 @@ async function main() {
       password: hashedPassword,
       trustLevel: TrustLevel.VETERAN,
       bio: 'Tapasztalt kereskedő, 5 éve aktív a platformon. Megbízható partner!',
-      avatar: 'https://i.pravatar.cc/150?img=12',
+      avatar: '/uploads/kiss.janos.jpg',
       balance: 120,
+      createdAt: new Date('2026-02-25T09:14:00'),
     },
   });
-  
 
   const user2 = await prisma.user.create({
     data: {
@@ -103,8 +103,9 @@ async function main() {
       password: hashedPassword,
       trustLevel: TrustLevel.TRUSTED,
       bio: 'Szeretek segíteni másoknak. Kerékpár-specialista vagyok.',
-      avatar: 'https://i.pravatar.cc/150?img=47',
+      avatar: '/uploads/nagy.katalin.jpg',
       balance: 12,
+      createdAt: new Date('2026-03-01T11:30:00'),
     },
   });
 
@@ -115,8 +116,9 @@ async function main() {
       password: hashedPassword,
       trustLevel: TrustLevel.NEWCOMER,
       bio: 'Új vagyok itt, de lelkes! Várom a jó ajánlatokat.',
-      avatar: 'https://i.pravatar.cc/150?img=33',
+      avatar: '/uploads/szabo.peter.jpg',
       balance: 5,
+      createdAt: new Date('2026-03-05T14:22:00'),
     },
   });
 
@@ -127,8 +129,9 @@ async function main() {
       password: hashedPassword,
       trustLevel: TrustLevel.TRUSTED,
       bio: 'Tanár vagyok, szívesen tanítok programozást kezdőknek.',
-      avatar: 'https://i.pravatar.cc/150?img=20',
+      avatar: '/uploads/toth.anna.jpg',
       balance: 10,
+      createdAt: new Date('2026-03-10T08:45:00'),
     },
   });
 
@@ -138,9 +141,10 @@ async function main() {
       email: 'horvath.gabor@example.com',
       password: hashedPassword,
       trustLevel: TrustLevel.NEWCOMER,
-      bio: null, 
-      avatar: null, 
+      bio: null,
+      avatar: null,
       balance: 8,
+      createdAt: new Date('2026-03-18T16:05:00'),
     },
   });
 
@@ -419,102 +423,199 @@ async function main() {
     },
   });
 
-  console.log(`✅ Created ${13} transactions`);
+  // Extra tranzakciók Kiss Jánosnak (provider) az értékelések teszteléséhez
+  const transaction14 = await prisma.transaction.create({
+    data: {
+      clientId: user2.id,
+      providerId: user1.id,
+      listingId: listing3.id,
+      agreedHours: 1,
+      totalPrice: 30,
+      status: TransactionStatus.COMPLETED,
+    },
+  });
+
+  const transaction15 = await prisma.transaction.create({
+    data: {
+      clientId: user4.id,
+      providerId: user1.id,
+      listingId: listing1.id,
+      agreedHours: 1,
+      totalPrice: 50,
+      status: TransactionStatus.COMPLETED,
+    },
+  });
+
+  const transaction16 = await prisma.transaction.create({
+    data: {
+      clientId: user3.id,
+      providerId: user1.id,
+      listingId: listing3.id,
+      agreedHours: 2,
+      totalPrice: 60,
+      status: TransactionStatus.COMPLETED,
+    },
+  });
+
+  const transaction17 = await prisma.transaction.create({
+    data: {
+      clientId: user5.id,
+      providerId: user1.id,
+      listingId: listing1.id,
+      agreedHours: 1,
+      totalPrice: 50,
+      status: TransactionStatus.COMPLETED,
+    },
+  });
+
+  console.log(`✅ Created ${17} transactions`);
 
 
   console.log('Creating reviews...');
 
+  // userId = a KAPOTT értékelés tulajdonosa (a reviewed person = provider)
+  // transaction1: client=user3, provider=user1 (Kiss János) → userId=user1
   await prisma.review.create({
     data: {
       rating: 5,
       comment: 'Kiváló laptop, pontosan a leírásnak megfelelő állapotban. A találkozó is gördülékeny volt, János nagyon korrekt volt. Csak ajánlani tudom mindenkinek!',
-      userId: user3.id,
+      userId: user1.id,
       transactionId: transaction1.id,
     },
   });
 
+  // transaction2: client=user4, provider=user2 (Nagy Katalin) → userId=user2
   await prisma.review.create({
     data: {
       rating: 5,
       comment: 'Profi szakember! Gyorsan és szakszerűen megjavította a kerékpáromat, most újra tökéletesen működik. Az ár is rendben volt. Legközelebb is hozzá fogok fordulni.',
-      userId: user4.id,
+      userId: user2.id,
       transactionId: transaction2.id,
     },
   });
 
+  // transaction3: client=user5, provider=user1 (Kiss János) → userId=user1
   await prisma.review.create({
     data: {
       rating: 4,
       comment: 'Finom, házi lekvár, természetes íz. Kicsit drágának találtam, de a minőség megéri. A csomagolás is gondos volt. Legközelebb is tőle veszek, ha kell lekvár.',
-      userId: user5.id,
+      userId: user1.id,
       transactionId: transaction3.id,
     },
   });
 
+  // transaction5: client=user2, provider=user5 (Horváth Gábor) → userId=user5
   await prisma.review.create({
     data: {
       rating: 5,
       comment: 'Nagyon segítőkész srác volt! A költözésnél sokat segített, erős és megbízható. Időben érkezett és a munkát gyorsan végezte. Mindenkinek ajánlom!',
-      userId: user2.id,
+      userId: user5.id,
       transactionId: transaction5.id,
     },
   });
 
+  // transaction8: client=user1, provider=user4 (Tóth Anna) → userId=user4
   await prisma.review.create({
     data: {
       rating: 5,
       comment: 'Anna kiváló tanár! Türelmes, érthetően magyaráz, és rengeteg hasznos példát hoz. Az első foglalkozás után máris sokat fejlődtem. Csak ajánlani tudom!',
-      userId: user1.id,
+      userId: user4.id,
       transactionId: transaction8.id,
     },
   });
 
+  // transaction9: client=user3, provider=user2 (Nagy Katalin) → userId=user2
   await prisma.review.create({
     data: {
       rating: 4,
       comment: 'Katalin szakszerűen javította a kerékpáromat, mindent alaposan átnézett. Kicsit tovább tartott a vártnál, de az eredménnyel nagyon elégedett vagyok.',
-      userId: user3.id,
+      userId: user2.id,
       transactionId: transaction9.id,
     },
   });
 
+  // transaction10: client=user2, provider=user4 (Tóth Anna) → userId=user4
   await prisma.review.create({
     data: {
       rating: 5,
       comment: 'Tóth Anna az egyik legjobb oktatóm. Rugalmas, felkészült, és mindig az én tempómhoz igazodott. Folytatom vele a tanulást!',
-      userId: user2.id,
+      userId: user4.id,
       transactionId: transaction10.id,
     },
   });
 
+  // transaction11: client=user2, provider=user1 (Kiss János) → userId=user1
   await prisma.review.create({
     data: {
       rating: 4,
       comment: 'János gyorsan és korrektül intézte az ügyet. A laptop pontosan olyan volt, ahogy leírta. Megbízható eladó, legközelebb is tőle vennék.',
-      userId: user2.id,
+      userId: user1.id,
       transactionId: transaction11.id,
     },
   });
 
+  // transaction12: client=user4, provider=user1 (Kiss János) → userId=user1
   await prisma.review.create({
     data: {
       rating: 5,
       comment: 'A házi lekvár fenomenális volt! Természetes, édes, tele van ízzel. Már rendeltem is belőle másodszor. János nagyon kedves és megbízható.',
-      userId: user4.id,
+      userId: user1.id,
       transactionId: transaction12.id,
     },
   });
 
+  // transaction13: client=user5, provider=user1 (Kiss János) → userId=user1
   await prisma.review.create({
     data: {
       rating: 4,
       comment: 'Rendben volt minden, a laptop jó állapotban volt. Kicsit nehéz volt az időpontot egyeztetni, de végül gördülékenyen ment. Ajánlom.',
-      userId: user5.id,
+      userId: user1.id,
       transactionId: transaction13.id,
     },
   });
 
-  console.log(`✅ Created ${10} reviews`);
+  // transaction14: client=user2, provider=user1 (Kiss János) → userId=user1
+  await prisma.review.create({
+    data: {
+      rating: 3,
+      comment: 'Közepesen voltam elégedve. A lekvár jó volt, de a kommunikáció lassú volt és az egyeztetés nehézkes. Talán máskor jobb lesz.',
+      userId: user1.id,
+      transactionId: transaction14.id,
+    },
+  });
+
+  // transaction15: client=user4, provider=user1 (Kiss János) → userId=user1
+  await prisma.review.create({
+    data: {
+      rating: 2,
+      comment: 'Sajnos nem voltam elégedett. A laptop egy-két dologban nem volt olyan, ahogy le volt írva. Nem ajánlom.',
+      userId: user1.id,
+      transactionId: transaction15.id,
+    },
+  });
+
+  // transaction16: client=user3, provider=user1 (Kiss János) → userId=user1
+  await prisma.review.create({
+    data: {
+      rating: 5,
+      comment: 'Kiváló minőségű lekvár, pontosan amit kerestem! János nagyon barátságos és megbízható partner. Biztosan visszatérek!',
+      userId: user1.id,
+      transactionId: transaction16.id,
+    },
+  });
+
+  // transaction17: client=user5, provider=user1 (Kiss János) → userId=user1
+  await prisma.review.create({
+    data: {
+      rating: 4,
+      comment: 'Jó tapasztalat volt. A laptop rendben volt, az átadás gördülékeny. Kis késlekedés volt, de összességében ajánlom.',
+      userId: user1.id,
+      transactionId: transaction17.id,
+    },
+  });
+
+  console.log(`✅ Created ${13} reviews (9 db Kiss Jánosnak – várható átlag: ~4.0)`);
+  // Kiss János értékelései: 5+4+4+5+4+3+2+5+4 = 36 / 9 = 4.0
 
 
   console.log('Creating website reviews...');
@@ -559,7 +660,55 @@ async function main() {
     },
   });
 
-  console.log(`✅ Created ${5} website reviews`);
+  await prisma.websiteReview.create({
+    data: {
+      rating: 5,
+      comment: 'Eddig mindig megbízható emberekkel találkoztam a platformon. Az értékelési rendszer sokat segít dönteni. Nagyszerű ötlet!',
+      userId: user1.id,
+    },
+  });
+
+  await prisma.websiteReview.create({
+    data: {
+      rating: 3,
+      comment: 'Jó az ötlet, de néhány funkción még lehetne csiszolni. Az alapvető dolgok viszont jól működnek, és hasznos volt számomra.',
+      userId: user3.id,
+    },
+  });
+
+  await prisma.websiteReview.create({
+    data: {
+      rating: 5,
+      comment: 'Fantasztikus közösség! Minden tranzakció gördülékenyen ment, és az emberek nagyon segítőkészek voltak. Teljes mértékben ajánlom!',
+      userId: user4.id,
+    },
+  });
+
+  await prisma.websiteReview.create({
+    data: {
+      rating: 4,
+      comment: 'Egyszerű regisztráció, átlátható felület. Pár napja kezdtem el használni, és már sikeresen csináltam egy cserét. Örülök hogy megtaláltam.',
+      userId: user5.id,
+    },
+  });
+
+  await prisma.websiteReview.create({
+    data: {
+      rating: 5,
+      comment: 'A Chronos teljesen megváltoztatta, hogyan gondolkodom a szomszédsági segítségről. Mindenki profitál belőle – időt és pénzt spórol.',
+      userId: user2.id,
+    },
+  });
+
+  await prisma.websiteReview.create({
+    data: {
+      rating: 4,
+      comment: 'Nagyon ötletes platform, az időalapú csere rendszer különösen tetszik. Remélem egyre több ember fogja használni!',
+      userId: user1.id,
+    },
+  });
+
+  console.log(`✅ Created ${12} website reviews`);
 
   console.log('');
   console.log('🎉 Seeding completed successfully!');
@@ -569,9 +718,9 @@ async function main() {
   console.log(`   - 1 admin user created`);
   console.log(`   - ${5} regular users created`);
   console.log(`   - ${10} listings created (${5} OFFER, ${5} REQUEST)`);
-  console.log(`   - ${13} transactions created`);
-  console.log(`   - ${10} reviews created`);
-  console.log(`   - ${5} website reviews created`);
+  console.log(`   - ${17} transactions created`);
+  console.log(`   - ${13} reviews created (9 db Kiss Jánosnak, várható átlag: 4.0)`);
+  console.log(`   - ${12} website reviews created`);
   console.log('');
   console.log('🔐 All users have the same password: Password123!');
   console.log('');

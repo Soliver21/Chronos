@@ -69,18 +69,16 @@ export class ReviewController {
         example: 5,
     })
     @ApiOkResponse({ description: "Legfrissebb szolgáltatás értékelések listája" })
-    getServiceReviewsWithLimit(
-        @Param("limit", ParseIntPipe) limit: number,
-    ) {
-        return this.service.getServiceReviews(limit);
+    getServiceReviewsWithLimit() {
+        return this.service.getServiceReviews();
     }
 
-    //Returns the 10 most recent reviews across the platform using a fixed default limit.
+    //Returns the 6 most recent reviews across the platform using a fixed default limit.
     @Public()
     @Get("service/latest")
-    @ApiOperation({ summary: "Legfrissebb szolgáltatás értékelések lekérése (alapértelmezett: 10)" })
-    @ApiOkResponse({ description: "Legfrissebb 10 szolgáltatás értékelés listája" })
+    @ApiOperation({ summary: "Legfrissebb szolgáltatás értékelések lekérése (alapértelmezett: 6)" })
+    @ApiOkResponse({ description: "Legfrissebb 6 szolgáltatás értékelés listája" })
     getServiceReviews() {
-        return this.service.getServiceReviews(10);
+        return this.service.getServiceReviews();
     }
 }
