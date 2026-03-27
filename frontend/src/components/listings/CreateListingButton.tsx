@@ -58,11 +58,28 @@ export default function CreateListingButton({ onCreated }: Props) {
       setForm({ title: "", description: "", pricePerHour: "", estimatedHours: "", categoryId: "", type: "OFFER" })
       setOpen(false)
       onCreated()
-      showToast("Hirdetés sikeresen létrehozva! 📋", "success")
+      showToast("Hirdetés sikeresen létrehozva!", "success")
     } catch (error: any) {
       console.error("Error creating listing:", error)
-      const msg = error?.response?.data?.message || "Hiba történt a hirdetés létrehozásakor."
-      showToast(msg, "error")
+      const rawMessage = error?.response?.data?.message
+      const errorTranslations: Record<string, string> = {
+        "pricePerHour must not be greater than 10": "Az óradíj maximum 10 időkredit lehet.",
+        "estimatedHours must not be greater than 6": "A becsült órák száma legfeljebb 6 lehet.",
+        "pricePerHour must not be less than 0": "Az óradíj nem lehet negatív.",
+        "estimatedHours must not be less than 1": "A becsült órák száma legalább 1 legyen.",
+        "title should not be empty": "A cím megadása kötelező.",
+        "description should not be empty": "A leírás megadása kötelező.",
+        "categoryId must be a number": "Kategória kiválasztása kötelező.",
+      }
+      if (Array.isArray(rawMessage) && rawMessage.length > 0) {
+        rawMessage.forEach((m: string) => {
+          showToast(errorTranslations[m] ?? m, "error")
+        })
+      } else if (typeof rawMessage === "string") {
+        showToast(errorTranslations[rawMessage] ?? rawMessage, "error")
+      } else {
+        showToast("Hiba történt a hirdetés létrehozásakor.", "error")
+      }
     } finally {
       setLoading(false)
     }

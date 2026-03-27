@@ -28,24 +28,32 @@ export function LoginForm() {
     setForm(prev => ({ ...prev, [name]: value }));
   }
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!form.email) { emailRef.current?.focus(); return; }
-    if (!form.password) { passwordRef.current?.focus(); return; }
-    setLoading(true);
-    try {
-      const res = await loginUser(form);
-      login(res.user, res.token);
-      showToast(`Üdvözlünk, ${res.user.name || "felhasználó"}!`, "success");
-      setForm(init);
-      navigate("/dashboard");
-    } catch (error) {
-      console.error(error);
-      showToast("Helytelen email vagy jelszó!", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!form.email) { emailRef.current?.focus(); return; }
+    if (!form.password) { passwordRef.current?.focus(); return; }
+    setLoading(true);
+    try {
+      const res = await loginUser(form);
+      login(res.user, res.token);
+      showToast(`Üdvözlünk, ${res.user.name || "felhasználó"}!`, "success");
+      setForm(init);
+      
+
+      if (res.user.email === "admin@chronos.com" || res.user.role === "ADMIN") {
+        navigate("/admin");
+      } else {
+        navigate("/dashboard");
+      }
+
+
+    } catch (error) {
+      console.error(error);
+      showToast("Helytelen email vagy jelszó!", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const pageBg = isDark ? "bg-[#0a0a0a]" : "bg-white";
   const cardBg = isDark ? "bg-[#0f0f14] border-white/10 text-white" : "bg-white border-gray-200 text-gray-900";

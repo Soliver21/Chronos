@@ -5,6 +5,7 @@ import RegisterForm from "./components/auth/RegisterForm"
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import Listings from "./pages/Listings";
+import Admin from "./pages/Admin";
 
 const App = () => {
   return (
@@ -19,6 +20,7 @@ const App = () => {
           <Route path="listings" element={<Listings />} />  
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/admin" element={<Admin />} />
         </Routes>
       </div>
     </BrowserRouter>
