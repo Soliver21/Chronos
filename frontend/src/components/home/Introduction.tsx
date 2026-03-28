@@ -17,7 +17,8 @@ const Introduction = () => {
 
   return (
     <section className="px-4 sm:px-8 pt-20 pb-16 text-center max-w-4xl mx-auto">
-      <h1 className={`text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight mb-6 animate-[fadeInUp_0.8s_ease_0.2s_both] ${headingCls}`}>
+      {/* pb-3 megakadályozza hogy a gradient clip levágja a betűk alját */}
+      <h1 className={`text-4xl sm:text-5xl md:text-6xl font-extrabold leading-[1.15] pb-3 mb-6 animate-[fadeInUp_0.8s_ease_0.2s_both] ${headingCls}`}>
         Cseréljen bizalommal,
         <br />
         kereskedjen könnyedén

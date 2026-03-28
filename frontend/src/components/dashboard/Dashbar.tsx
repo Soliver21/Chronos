@@ -23,7 +23,7 @@ const Dashbar = () => {
 
   const navLink = (path: string, label: string, icon: string) => {
     const active = isActive(path);
-    const baseCls = "text-sm font-medium transition-all flex items-center gap-1.5 px-3 py-1.5 rounded-lg";
+    const baseCls = "text-[15px] font-semibold transition-all flex items-center gap-1.5 px-3 py-2 rounded-lg";
     const activeCls = isDark ? "text-white bg-white/10 font-semibold" : "text-gray-900 bg-gray-100 font-semibold";
     const inactiveCls = isDark ? "text-gray-500 hover:text-white hover:bg-white/5" : "text-gray-500 hover:text-gray-900 hover:bg-gray-100";
     return (
@@ -51,12 +51,12 @@ const Dashbar = () => {
 
   return (
     <nav className={`sticky top-0 z-50 backdrop-blur-md border-b transition-colors duration-300 ${navBg}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 flex justify-between items-center h-14">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 flex justify-between items-center h-[76px]">
 
         {/* Logo + navigációs linkek */}
         <div className="flex items-center gap-2">
           <h2
-            className="text-xl font-extrabold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent cursor-pointer select-none mr-2"
+            className="text-[24px] font-extrabold bg-gradient-to-r from-[#667eea] to-[#764ba2] bg-clip-text text-transparent cursor-pointer select-none mr-2"
             onClick={() => { navigate("/"); setOpen(false); }}
           >
             Chronos.
@@ -82,13 +82,13 @@ const Dashbar = () => {
           </button>
 
           <div className="text-right leading-tight">
-            <p className={`text-sm font-semibold ${nameCls}`}>{user?.name || "Vendég"}</p>
-            <p className={`text-xs ${emailCls}`}>{user?.email || ""}</p>
+            <p className={`text-base font-semibold ${nameCls}`}>{user?.name || "Vendég"}</p>
+            <p className={`text-sm leading-tight ${emailCls}`}>{user?.email || ""}</p>
           </div>
 
           <Link
             to="/profile"
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
               isActive("/profile")
                 ? isDark ? "bg-white/10 border-white/20 text-white font-semibold" : "bg-gray-100 border-gray-300 text-gray-900 font-semibold"
                 : profileBtnCls
@@ -100,7 +100,7 @@ const Dashbar = () => {
 
           <button
             onClick={logout}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-600/80 hover:bg-red-600 text-white text-sm font-semibold transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-red-600/80 hover:bg-red-600 text-white text-sm font-semibold transition-colors"
           >
             <i className="bi bi-box-arrow-right" /> Kilépés
           </button>
@@ -132,7 +132,7 @@ const Dashbar = () => {
               </div>
               <div>
                 <p className={`text-sm font-semibold leading-tight ${nameCls}`}>{user?.name}</p>
-                <p className={`text-xs leading-tight ${emailCls}`}>{user?.email}</p>
+                <p className={`text-sm leading-tight ${emailCls}`}>{user?.email}</p>
               </div>
             </div>
             {mobileNavLink("/profile", "Profilom", "bi-person")}

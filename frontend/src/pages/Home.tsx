@@ -5,15 +5,17 @@ import Introduction from "../components/home/Introduction";
 import Navbar from "../components/home/Navbar";
 import TrustLevelCards from "../components/home/TrustLevelCards";
 import WebsiteReviewSection from "../components/home/WebsiteReviewSection";
+import Dashbar from "../components/dashboard/Dashbar";
 import { useTheme } from "../context/ThemeContext";
+import { useAuth } from "../context/AuthContext";
 
 const Home = () => {
   const { theme } = useTheme();
+  const { user } = useAuth();
   const isDark = theme === "dark";
 
   return (
     <div className={`min-h-screen overflow-x-hidden transition-colors duration-300 ${isDark ? "bg-[#0a0a0a] text-white" : "bg-white text-gray-900"}`}>
-      {/* Sötét téma lemaradt, itt implementáltam - Olivér */}
       {isDark && (
         <div
           className="fixed inset-0 -z-10 pointer-events-none"
@@ -25,7 +27,10 @@ const Home = () => {
           }}
         />
       )}
-      <Navbar />
+
+      {/* Bejelentkezett user → Dashbar, vendég → Navbar */}
+      {user ? <Dashbar /> : <Navbar />}
+
       <Introduction />
       <FunctionCards />
       <TrustLevelCards />
