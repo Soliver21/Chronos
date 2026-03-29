@@ -81,8 +81,9 @@ export class ReviewService {
         });
     }
 
-    async getServiceReviews() {
+    async getServiceReviews(limit: number = 10) {
         return await this.prisma.websiteReview.findMany({
+            take: limit,
             include: {
                 user: {
                     select: { id: true, name: true, avatar: true },
