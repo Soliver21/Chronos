@@ -286,9 +286,9 @@ const Profile = () => {
   const reviewFormBg = isDark ? "bg-white/5 border-white/10" : "bg-gray-50 border-gray-200";
   const reviewTextarea = isDark ? "bg-[#1a1a1f] border-white/10 text-white placeholder-gray-600" : "bg-white border-gray-200 text-gray-900 placeholder-gray-400";
 
-  const tabTriggerCls = `rounded-none border-b-2 border-transparent px-3 pb-3 pt-2 font-semibold text-sm text-gray-500
+  const tabTriggerCls = `rounded-none border-b-2 border-transparent px-2 pb-2.5 pt-2 font-semibold text-[11px] sm:text-xs md:text-sm text-gray-500
     data-[state=active]:border-indigo-500 ${isDark ? "data-[state=active]:text-white" : "data-[state=active]:text-gray-900"}
-    bg-transparent transition-all shadow-none whitespace-nowrap`;
+    bg-transparent transition-all shadow-none whitespace-nowrap flex-1 text-center`;
 
   const statCards = [
     { label: "Összes hirdetés", value: listings.length },
@@ -342,8 +342,8 @@ const Profile = () => {
           </div>
 
           <Tabs defaultValue="profile" className="w-full">
-            <TabsList className={`w-full justify-start border-b bg-transparent p-0 h-auto mb-6 gap-0 ${tabBorder}`}>
-              <TabsTrigger value="profile" className={tabTriggerCls}>Saját adatok</TabsTrigger>
+            <TabsList className={`w-full flex border-b bg-transparent p-0 h-auto mb-6 gap-0 ${tabBorder}`}>
+              <TabsTrigger value="profile" className={tabTriggerCls}><span className="hidden xs:inline">Saját </span>Adatok</TabsTrigger>
               <TabsTrigger value="listings" className={tabTriggerCls}>Hirdetések ({listings.length})</TabsTrigger>
               <TabsTrigger value="transactions" className={tabTriggerCls}>Tranzakciók ({transactions.length})</TabsTrigger>
               <TabsTrigger value="reviews" className={tabTriggerCls}>Értékelések ({reviews.length})</TabsTrigger>
