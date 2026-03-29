@@ -1,0 +1,14 @@
+uploads/*
+!uploads/.gitkeep
+!uploads/.jpg
+!uploads/.jpeg
+!uploads/.png
+!uploads/.gif
+!uploads/.webp
+!uploads/categories/
+uploads/categories/
+!uploads/categories/.jpg
+!uploads/categories/.jpeg
+!uploads/categories/.png
+!uploads/categories/.gif
+!uploads/categories/*.webp
