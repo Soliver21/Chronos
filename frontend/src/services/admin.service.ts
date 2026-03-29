@@ -1,4 +1,3 @@
-import { EclipseIcon } from "lucide-react";
 import { api } from "./api";
 
 export const getAdminStats = async () => {
@@ -46,6 +45,6 @@ export const adminDeleteReview = async (id: number) => {
 };
 
 export const adminResolveTransaction = async (id: number, action: "COMPLETE" | "CANCEL") => {
-  const res = await api.post(`/admin/transactions/${id}/resolve`, { action });
+  const res = await api.post(`/admin/transactions/${id}/resolve`, { action: action.toLowerCase() });
   return res.data;
 };

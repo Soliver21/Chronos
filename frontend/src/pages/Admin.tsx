@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
+import { useToast } from "../context/ToastContext";
 import {
   getAdminStats, getAdminUsers, getAdminTransactions, getAdminUserCharts, getAdminListingCharts, getAdminReviewCharts, adminUpdateUser, adminResolveTransaction,
 } from "../services/admin.service";
@@ -39,7 +40,7 @@ const ROLE_COLORS: Record<string, string> = {
 };
 const STATUS_CONFIG = {
   PENDING: { cls: "bg-amber-500/20 text-amber-400 border border-amber-500/30", label: "FÜGGŐBEN" },
-  COMPLETED: { cls: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30", label: "KÉSZ" },
+  COMPLETED: { cls: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30", label: "BEFEJEZETT" },
   CANCELLED: { cls: "bg-red-500/20 text-red-400 border border-red-500/30", label: "TÖRÖLVE" },
 };
 
@@ -72,17 +73,31 @@ const SectionHeader = ({ icon: Icon, title, sub, isDark }: any) => (
 );
 
 const tooltipStyle = (isDark: boolean) => ({
-  background: isDark ? "#a8a8a8" : "#fff",
-  border: isDark ? "1px solid rgba(255,255,255,0.1)" : "1px solid #e5e7eb",
+  background: isDark ? "#1e1e2e" : "#fff",
+  border: isDark ? "1px solid rgba(255,255,255,0.12)" : "1px solid #e5e7eb",
   borderRadius: "12px", fontSize: 13,
-  color: isDark ? "#fff" : "#a5a5a5",
+  color: isDark ? "#f1f5f9" : "#1e293b",
+  boxShadow: isDark ? "0 8px 32px rgba(0,0,0,0.6)" : "0 4px 16px rgba(0,0,0,0.1)",
 });
+
+const tooltipLabelStyle = (isDark: boolean) => ({
+  color: isDark ? "#94a3b8" : "#64748b",
+  marginBottom: 2,
+});
+
+const formatDate = (dateStr: string) => {
+  try {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("hu-HU", { month: "short", day: "numeric" });
+  } catch { return dateStr; }
+};
 
 // ─── Admin Page ───────────────────────────────────────────────────────────────
 // Az App.tsx AdminRoute garantálja hogy csak ADMIN user kerülhet ide.
 const Admin = () => {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { showToast } = useToast();
   const isDark = theme === "dark";
 
   // ── State ──
@@ -103,7 +118,6 @@ const Admin = () => {
   const [editName, setEditName] = useState("");
   const [editSlug, setEditSlug] = useState("");
   const { logout } = useAuth();
-
 
   useEffect(() => {
     (async () => {
@@ -129,21 +143,30 @@ const Admin = () => {
     try {
       await adminUpdateUser(u.id, { isActive: !u.isActive });
       setUsers(prev => prev.map(x => x.id === u.id ? { ...x, isActive: !u.isActive } : x));
-    } catch { }
+      showToast(u.isActive ? `${u.name} fiókja tiltva lett.` : `${u.name} fiókja aktiválva lett.`, u.isActive ? "warning" : "success");
+    } catch {
+      showToast("Hiba történt a művelet során.", "error");
+    }
   };
 
   const handleTrustChange = async (u: AdminUser, val: string) => {
     try {
       await adminUpdateUser(u.id, { trustLevel: val });
       setUsers(prev => prev.map(x => x.id === u.id ? { ...x, trustLevel: val } : x));
-    } catch { }
+      showToast(`${u.name} bizalmi szintje: ${val}`, "success");
+    } catch {
+      showToast("Hiba a bizalmi szint módosításakor.", "error");
+    }
   };
 
   const handleResolve = async (id: number, action: "COMPLETE" | "CANCEL") => {
     try {
       await adminResolveTransaction(id, action);
       setTransactions(await getAdminTransactions());
-    } catch { }
+      showToast(action === "COMPLETE" ? "Tranzakció sikeresen lezárva." : "Tranzakció törölve.", action === "COMPLETE" ? "success" : "warning");
+    } catch {
+      showToast("Hiba a tranzakció kezelésekor.", "error");
+    }
   };
 
   const handleCreateCategory = async () => {
@@ -152,11 +175,21 @@ const Admin = () => {
       await api.post("/admin/categories", { name: catName, slug: catSlug });
       setCatName(""); setCatSlug("");
       await refreshCategories();
-    } catch { }
+      showToast(`„${catName}" kategória létrehozva.`, "success");
+    } catch {
+      showToast("Hiba a kategória létrehozásakor.", "error");
+    }
   };
 
   const handleDeleteCategory = async (id: number) => {
-    try { await api.delete(`/admin/categories/${id}`); await refreshCategories(); } catch { }
+    const cat = categories.find(c => c.id === id);
+    try {
+      await api.delete(`/admin/categories/${id}`);
+      await refreshCategories();
+      showToast(`„${cat?.name ?? "Kategória"}" törölve.`, "warning");
+    } catch {
+      showToast("Hiba a kategória törlésekor.", "error");
+    }
   };
 
   const handleUpdateCategory = async () => {
@@ -165,7 +198,10 @@ const Admin = () => {
       await api.patch(`/admin/categories/${editingCat.id}`, { name: editName, slug: editSlug });
       setEditingCat(null);
       await refreshCategories();
-    } catch { }
+      showToast(`„${editName}" kategória frissítve.`, "success");
+    } catch {
+      showToast("Hiba a kategória módosításakor.", "error");
+    }
   };
 
   const filteredTx = transactions.filter(tx => txFilter === "ALL" ? true : tx.status === txFilter);
@@ -178,19 +214,19 @@ const Admin = () => {
   // byTrustLevel: [{trustLevel, count}]
   const trustData = (userCharts?.byTrustLevel ?? []).map((r: any) => ({ name: r.trustLevel, value: r.count }));
   // dailyRegistrations: [{date, count}]
-  const registrationData = (userCharts?.registrationsLast30Days ?? []).slice(-14);
+  const registrationData = (userCharts?.registrationsLast30Days ?? []).slice(-30);
   // byCategory: [{category, count}]
   const categoryListingData = (listingCharts?.byCategory ?? []).map((r: any) => ({ name: r.category, value: r.count }));
   // ratingDistribution: [{rating, count}]
   const ratingData = (reviewCharts?.ratingDistribution ?? []).map((r: any) => ({ star: `${r.rating}★`, count: r.count }));
   const txStatusData = stats ? [
-    { name: "Kész", value: stats.transactions.completed, fill: "#10b981" },
-    { name: "Függő", value: stats.transactions.pending, fill: "#f59e0b" },
+    { name: "Befejezett", value: stats.transactions.completed, fill: "#10b981" },
+    { name: "Függőben", value: stats.transactions.pending, fill: "#f59e0b" },
     { name: "Törölve", value: stats.transactions.cancelled, fill: "#ef4444" },
   ] : [];
 
   // ── Styles ──
-  const pageBg = isDark ? "bg-[#080810] min-h-screen" : "bg-gray-50 min-h-screen";
+  const pageBg = isDark ? "bg-[#080810] min-h-screen transition-colors duration-300" : "bg-gray-50 min-h-screen transition-colors duration-300";
   const cardBg = isDark ? "bg-[#0f0f14] border-white/8" : "bg-white border-gray-200 shadow-sm";
   const tableBg = cardBg;
   const rowHover = isDark ? "hover:bg-white/3" : "hover:bg-gray-50";
@@ -224,39 +260,31 @@ const Admin = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-8 py-8">
 
         {/* Page header */}
-        <div className="flex items-center justify-between mb-8">
-
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center shadow-lg shadow-indigo-500/25">
-              <Shield size={22} className="text-white" />
+        <div className="flex items-center justify-between mb-8 gap-4 flex-wrap">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-[#667eea] to-[#764ba2] flex items-center justify-center shadow-lg shadow-indigo-500/25 flex-shrink-0">
+              <Shield size={20} className="text-white" />
             </div>
             <div>
-              <h1 className={`text-2xl font-extrabold tracking-tight ${textPrimary}`}>
+              <h1 className={`text-xl sm:text-2xl font-extrabold tracking-tight ${textPrimary}`}>
                 Admin Panel
               </h1>
-              <p className={`text-sm ${textSub}`}>
+              <p className={`text-xs sm:text-sm ${textSub}`}>
                 Platform kezelés és felügyelet
               </p>
             </div>
           </div>
-
-
-          <div className="flex items-center gap-3">
-
-
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={toggleTheme}
-              className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${isDark ? "hover:bg-white/10 text-yellow-400" : "hover:bg-gray-100 text-indigo-600"
-                }`}
+              className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${isDark ? "hover:bg-white/10 text-yellow-400" : "hover:bg-gray-100 text-indigo-600"}`}
               title={isDark ? "Váltás világos módra" : "Váltás sötét módra"}
             >
               {isDark ? <Sun size={18} /> : <Moon size={18} />}
             </button>
-
-
             <button
               onClick={logout}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/15 text-red-400 border border-red-500/30 hover:bg-red-500/25 text-sm font-bold transition-all"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-red-500/15 text-red-400 border border-red-500/30 hover:bg-red-500/25 text-sm font-bold transition-all"
             >
               Kilépés
             </button>
@@ -264,12 +292,13 @@ const Admin = () => {
         </div>
 
         {/* Tabs */}
-        <div className={`flex gap-1 p-1 rounded-2xl border mb-8 w-fit ${isDark ? "bg-white/4 border-white/8" : "bg-gray-100 border-gray-200"}`}>
+        <div className="overflow-x-auto mb-8">
+          <div className={`flex gap-1 p-1 rounded-2xl border w-fit min-w-full sm:min-w-0 ${isDark ? "bg-white/4 border-white/8" : "bg-gray-100 border-gray-200"}`}>
           {tabs.map(t => {
             const active = activeTab === t.id;
             return (
               <button key={t.id} onClick={() => setActiveTab(t.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${active
+                className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap ${active
                   ? "bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white shadow-lg shadow-indigo-500/20"
                   : isDark ? "text-gray-400 hover:text-white hover:bg-white/5" : "text-gray-500 hover:text-gray-900 hover:bg-white"
                   }`}>
@@ -279,11 +308,12 @@ const Admin = () => {
             );
           })}
         </div>
+        </div>
 
         {/* ══ OVERVIEW ══════════════════════════════════════════════════════════ */}
         {activeTab === "overview" && stats && (
           <div className="space-y-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <StatCard icon={Users} label="Felhasználók" value={stats.totalUsers} accent="bg-indigo-600" isDark={isDark} />
               <StatCard icon={Package} label="Hirdetések" value={stats.totalListings} accent="bg-purple-600" isDark={isDark} />
               <StatCard icon={Star} label="Értékelések" value={stats.totalReviews} accent="bg-amber-600" isDark={isDark} />
@@ -300,7 +330,7 @@ const Admin = () => {
                     <Pie data={txStatusData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} dataKey="value" paddingAngle={3}>
                       {txStatusData.map((e, i) => <Cell key={i} fill={e.fill} />)}
                     </Pie>
-                    <Tooltip contentStyle={tooltipStyle(isDark)} />
+                    <Tooltip contentStyle={tooltipStyle(isDark)} labelStyle={tooltipLabelStyle(isDark)} itemStyle={{ color: isDark ? "#f1f5f9" : "#1e293b" }} formatter={(v: any, name: any) => [v, name]} />
                     <Legend iconType="circle" iconSize={8} formatter={(v) => <span className={textSub}>{v}</span>} />
                   </PieChart>
                 </ResponsiveContainer>
@@ -319,7 +349,7 @@ const Admin = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "rgba(255,255,255,0.05)" : "#f3f4f6"} />
                     <XAxis dataKey="name" tick={{ fill: isDark ? "#6b7280" : "#9ca3af", fontSize: 12 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fill: isDark ? "#6b7280" : "#9ca3af", fontSize: 12 }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={tooltipStyle(isDark)} />
+                    <Tooltip contentStyle={tooltipStyle(isDark)} labelStyle={tooltipLabelStyle(isDark)} itemStyle={{ color: isDark ? "#f1f5f9" : "#1e293b" }} cursor={{ fill: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)" }} formatter={(v: any) => [v, "Felhasználó"]} />
                     <Bar dataKey="value" fill="url(#trustGrad)" radius={[8, 8, 0, 0]}/>
                   </BarChart>
                 </ResponsiveContainer>
@@ -329,7 +359,7 @@ const Admin = () => {
             <div className="grid md:grid-cols-2 gap-6">
               {/* Daily registrations */}
               <div className={`rounded-2xl border p-6 ${cardBg}`}>
-                <SectionHeader icon={Users} title="Napi regisztrációk" sub="Utolsó 14 nap" isDark={isDark} />
+                <SectionHeader icon={Users} title="Napi regisztrációk" sub="Utolsó 30 nap" isDark={isDark} />
                 <ResponsiveContainer width="100%" height={200}>
                   <AreaChart data={registrationData}>
                     <defs>
@@ -339,9 +369,9 @@ const Admin = () => {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "rgba(255,255,255,0.05)" : "#f3f4f6"} />
-                    <XAxis dataKey="date" tick={{ fill: isDark ? "#6b7280" : "#9ca3af", fontSize: 11 }} axisLine={false} tickLine={false} />
+                    <XAxis dataKey="date" tickFormatter={formatDate} tick={{ fill: isDark ? "#6b7280" : "#9ca3af", fontSize: 11 }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
                     <YAxis tick={{ fill: isDark ? "#6b7280" : "#9ca3af", fontSize: 11 }} axisLine={false} tickLine={false} allowDecimals={false} />
-                    <Tooltip contentStyle={tooltipStyle(isDark)} />
+                    <Tooltip contentStyle={tooltipStyle(isDark)} labelStyle={tooltipLabelStyle(isDark)} itemStyle={{ color: isDark ? "#f1f5f9" : "#1e293b" }} cursor={{ stroke: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)", strokeWidth: 1 }} formatter={(v: any) => [v, "Regisztráció"]} labelFormatter={formatDate} />
                     <Area type="monotone" dataKey="count" stroke="#667eea" strokeWidth={2} fill="url(#regGrad)" />
                   </AreaChart>
                 </ResponsiveContainer>
@@ -356,7 +386,7 @@ const Admin = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "rgba(255,255,255,0.05)" : "#f3f4f6"} />
                     <XAxis dataKey="star" tick={{ fill: isDark ? "#6b7280" : "#9ca3af", fontSize: 12 }} axisLine={false} tickLine={false} />
                     <YAxis tick={{ fill: isDark ? "#6b7280" : "#9ca3af", fontSize: 12 }} axisLine={false} tickLine={false} allowDecimals={false} />
-                    <Tooltip contentStyle={tooltipStyle(isDark)} />
+                    <Tooltip contentStyle={tooltipStyle(isDark)} labelStyle={tooltipLabelStyle(isDark)} itemStyle={{ color: isDark ? "#f1f5f9" : "#1e293b" }} cursor={{ fill: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)" }} formatter={(v: any) => [v, "Értékelés"]} />
                     <Bar dataKey="count" fill="#f59e0b" radius={[6, 6, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -367,8 +397,8 @@ const Admin = () => {
             {categoryListingData.length > 0 && (
               <div className={`rounded-2xl border p-6 ${cardBg}`}>
                 <SectionHeader icon={Tag} title="Hirdetések kategóriánként" sub="Aktív hirdetések megoszlása" isDark={isDark} />
-                <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={categoryListingData} layout="vertical" barSize={18}>
+                <ResponsiveContainer width="100%" height={Math.max(240, categoryListingData.length * 36)}>
+                  <BarChart data={categoryListingData} layout="vertical" barSize={18} margin={{ left: 8, right: 16, top: 4, bottom: 4 }}>
                     <defs>
                       <linearGradient id="catGrad" x1="0" y1="0" x2="1" y2="0">
                         <stop offset="0%" stopColor="#667eea" /><stop offset="100%" stopColor="#764ba2" />
@@ -376,8 +406,8 @@ const Admin = () => {
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke={isDark ? "rgba(255,255,255,0.05)" : "#f3f4f6"} horizontal={false} />
                     <XAxis type="number" tick={{ fill: isDark ? "#6b7280" : "#9ca3af", fontSize: 12 }} axisLine={false} tickLine={false} allowDecimals={false} />
-                    <YAxis type="category" dataKey="name" tick={{ fill: isDark ? "#9ca3af" : "#6b7280", fontSize: 11 }} axisLine={false} tickLine={false} width={140} />
-                    <Tooltip contentStyle={tooltipStyle(isDark)} />
+                    <YAxis type="category" dataKey="name" tick={{ fill: isDark ? "#9ca3af" : "#6b7280", fontSize: 12 }} axisLine={false} tickLine={false} width={160} />
+                    <Tooltip contentStyle={tooltipStyle(isDark)} labelStyle={tooltipLabelStyle(isDark)} itemStyle={{ color: isDark ? "#f1f5f9" : "#1e293b" }} cursor={{ fill: isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)" }} formatter={(v: any) => [v, "Hirdetés"]} />
                     <Bar dataKey="value" fill="url(#catGrad)" radius={[0, 6, 6, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -396,7 +426,8 @@ const Admin = () => {
                 value={userSearch} onChange={e => setUserSearch(e.target.value)} />
             </div>
             <div className={`rounded-2xl border overflow-hidden ${tableBg}`}>
-              <table className="w-full text-sm">
+              <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[640px]">
                 <thead>
                   <tr className={`border-b text-xs uppercase tracking-wider ${divider} ${isDark ? "text-gray-500" : "text-gray-400"}`}>
                     <th className="text-left px-5 py-4 font-semibold">Felhasználó</th>
@@ -442,7 +473,7 @@ const Admin = () => {
                         </span>
                       </td>
                       <td className={`px-4 py-4 text-right font-semibold ${textPrimary}`}>
-                        {u.balance} <span className={`text-xs font-normal ${textSub}`}>cr</span>
+                        {u.balance} <span className={`text-xs font-normal ${textSub}`}>kr</span>
                       </td>
                       <td className="px-5 py-4 text-right">
                         {u.role !== "ADMIN" && (
@@ -461,6 +492,7 @@ const Admin = () => {
                   )}
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
         )}
@@ -469,24 +501,26 @@ const Admin = () => {
         {activeTab === "transactions" && (
           <div className="space-y-6">
             <SectionHeader icon={ArrowLeftRight} title="Tranzakciók" sub="Platform-szintű tranzakciók kezelése" isDark={isDark} />
+            <div className="overflow-x-auto">
             <div className={`flex gap-1 p-1 rounded-xl border w-fit ${isDark ? "bg-white/4 border-white/8" : "bg-gray-100 border-gray-200"}`}>
               {(["ALL", "PENDING", "COMPLETED", "CANCELLED"] as const).map(f => (
                 <button key={f} onClick={() => setTxFilter(f)}
-                  className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${txFilter === f
+                  className={`px-3 sm:px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${txFilter === f
                     ? "bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white shadow"
                     : isDark ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-900"}`}>
-                  {f === "ALL" ? "ÖSSZES" : f === "PENDING" ? "FÜGGŐBEN" : f === "COMPLETED" ? "KÉSZ" : "TÖRÖLVE"}
+                  {f === "ALL" ? "ÖSSZES" : f === "PENDING" ? "FÜGGŐBEN" : f === "COMPLETED" ? "BEFEJEZETT" : "TÖRÖLVE"}
                   <span className={`ml-1.5 px-1.5 py-0.5 rounded text-[10px] ${txFilter === f ? "bg-white/20" : isDark ? "bg-white/8" : "bg-gray-200"}`}>
                     {f === "ALL" ? transactions.length : transactions.filter(t => t.status === f).length}
                   </span>
                 </button>
               ))}
             </div>
+            </div>
             <div className={`rounded-2xl border overflow-hidden ${tableBg}`}>
-              <table className="w-full text-sm">
+              <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[800px]">
                 <thead>
                   <tr className={`border-b text-xs uppercase tracking-wider ${divider} ${isDark ? "text-gray-500" : "text-gray-400"}`}>
-                    <th className="text-left px-5 py-4 font-semibold">#</th>
                     <th className="text-left px-4 py-4 font-semibold">Hirdetés</th>
                     <th className="text-left px-4 py-4 font-semibold">Kliens</th>
                     <th className="text-left px-4 py-4 font-semibold">Szolgáltató</th>
@@ -504,13 +538,12 @@ const Admin = () => {
                     const date = new Date(tx.createdAt).toLocaleDateString("hu-HU", { year: "numeric", month: "short", day: "numeric" });
                     return (
                       <tr key={tx.id} className={`border-b transition-colors ${divider} ${rowHover} ${i === filteredTx.length - 1 ? "border-0" : ""}`}>
-                        <td className={`px-5 py-4 font-mono text-xs ${textSub}`}>#{tx.id}</td>
                         <td className={`px-4 py-4 max-w-[160px] truncate font-medium ${textPrimary}`} title={title}>{title}</td>
                         <td className={`px-4 py-4 ${textPrimary}`}>{tx.client.name}</td>
                         <td className={`px-4 py-4 ${textPrimary}`}>{tx.provider.name}</td>
-                        <td className={`px-4 py-4 text-center ${textSub}`}>{tx.agreedHours}h</td>
+                        <td className={`px-4 py-4 text-center ${textSub}`}>{tx.agreedHours}ó</td>
                         <td className={`px-4 py-4 text-right font-semibold ${textPrimary}`}>
-                          {tx.totalPrice} <span className={`text-xs font-normal ${textSub}`}>cr</span>
+                          {tx.totalPrice} <span className={`text-xs font-normal ${textSub}`}>kr</span>
                         </td>
                         <td className="px-4 py-4">
                           <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${sc.cls}`}>{sc.label}</span>
@@ -521,7 +554,7 @@ const Admin = () => {
                             <div className="flex gap-2 justify-end">
                               <button onClick={() => handleResolve(tx.id, "COMPLETE")}
                                 className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 border border-emerald-500/30 text-xs font-bold transition-all">
-                                <CheckCircle size={12} /> Kész
+                                <CheckCircle size={12} /> Befejezett
                               </button>
                               <button onClick={() => handleResolve(tx.id, "CANCEL")}
                                 className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-red-500/15 text-red-400 hover:bg-red-500/25 border border-red-500/30 text-xs font-bold transition-all">
@@ -534,10 +567,11 @@ const Admin = () => {
                     );
                   })}
                   {filteredTx.length === 0 && (
-                    <tr><td colSpan={9} className={`px-5 py-10 text-center ${textSub}`}>Nincs tranzakció ebben a kategóriában</td></tr>
+                    <tr><td colSpan={8} className={`px-5 py-10 text-center ${textSub}`}>Nincs tranzakció ebben a kategóriában</td></tr>
                   )}
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
         )}
@@ -601,10 +635,10 @@ const Admin = () => {
 
             {/* Categories table */}
             <div className={`rounded-2xl border overflow-hidden ${tableBg}`}>
-              <table className="w-full text-sm">
+              <div className="overflow-x-auto">
+              <table className="w-full text-sm min-w-[400px]">
                 <thead>
                   <tr className={`border-b text-xs uppercase tracking-wider ${divider} ${isDark ? "text-gray-500" : "text-gray-400"}`}>
-                    <th className="text-left px-5 py-4 font-semibold">#</th>
                     <th className="text-left px-4 py-4 font-semibold">Név</th>
                     <th className="text-left px-4 py-4 font-semibold">Slug</th>
                     <th className="text-right px-5 py-4 font-semibold">Műveletek</th>
@@ -613,7 +647,6 @@ const Admin = () => {
                 <tbody>
                   {[...categories].sort((a, b) => a.name.localeCompare(b.name)).map((cat, i, arr) => (
                     <tr key={cat.id} className={`border-b transition-colors ${divider} ${rowHover} ${i === arr.length - 1 ? "border-0" : ""}`}>
-                      <td className={`px-5 py-4 font-mono text-xs ${textSub}`}>{cat.id}</td>
                       <td className={`px-4 py-4 font-semibold ${textPrimary}`}>{cat.name}</td>
                       <td className="px-4 py-4">
                         <code className={`px-2 py-0.5 rounded text-xs font-mono ${isDark ? "bg-white/8 text-indigo-400" : "bg-indigo-50 text-indigo-600"}`}>{cat.slug}</code>
@@ -633,10 +666,11 @@ const Admin = () => {
                     </tr>
                   ))}
                   {categories.length === 0 && (
-                    <tr><td colSpan={4} className={`px-5 py-10 text-center ${textSub}`}>Nincsenek kategóriák</td></tr>
+                    <tr><td colSpan={3} className={`px-5 py-10 text-center ${textSub}`}>Nincsenek kategóriák</td></tr>
                   )}
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
         )}
