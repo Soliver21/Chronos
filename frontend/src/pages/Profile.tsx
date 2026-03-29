@@ -10,7 +10,7 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
-import { Star, Loader2 } from "lucide-react";
+import { Star, Loader2, Pencil, Trash2 } from "lucide-react";
 import { getUserById, getUserStats, updateMyProfile } from "../services/user.service";
 import { getMyListings } from "../services/listing.service";
 import { getMyTransactions, completeTransaction, cancelTransaction } from "../services/transaction.service";
@@ -30,9 +30,8 @@ const StarPicker = ({ value, onChange }: { value: number; onChange: (v: number) 
         key={star}
         size={20}
         onClick={() => onChange(star)}
-        className={`cursor-pointer transition-colors ${
-          star <= value ? "text-yellow-400 fill-yellow-400" : "text-gray-500"
-        } hover:text-yellow-300 hover:fill-yellow-300`}
+        className={`cursor-pointer transition-colors ${star <= value ? "text-yellow-400 fill-yellow-400" : "text-gray-500"
+          } hover:text-yellow-300 hover:fill-yellow-300`}
       />
     ))}
   </div>
@@ -64,6 +63,13 @@ const Profile = () => {
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewedTxIds, setReviewedTxIds] = useState<Set<number>>(new Set());
 
+  // Hirdetés szerkesztés/törlés állapotok
+  const [editingListing, setEditingListing] = useState<Listing | null>(null);
+  const [editForm, setEditForm] = useState({ title: "", description: "", pricePerHour: "", estimatedHours: "", categoryId: "" });
+  const [editSaving, setEditSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [categories, setCategories] = useState<{ id: number; name: string; slug: string }[]>([]);
+
   useEffect(() => {
     if (!user?.id) return;
     const fetchAllData = async () => {
@@ -92,6 +98,69 @@ const Profile = () => {
     };
     fetchAllData();
   }, [user?.id]);
+
+  useEffect(() => {
+    api.get("/categories").then(res => setCategories(res.data)).catch(console.error);
+  }, []);
+
+  const openEditListing = (item: Listing) => {
+    setEditingListing(item);
+    setEditForm({
+      title: item.title,
+      description: item.description,
+      pricePerHour: String(item.pricePerHour),
+      estimatedHours: item.estimatedHours != null ? String(item.estimatedHours) : "",
+      categoryId: String(item.categoryId),
+    });
+  };
+
+  const handleEditSave = async () => {
+    if (!editingListing) return;
+    if (!editForm.title.trim()) { showToast("A cím megadása kötelező.", "error"); return; }
+    if (!editForm.description.trim()) { showToast("A leírás megadása kötelező.", "error"); return; }
+    const price = parseFloat(editForm.pricePerHour);
+    if (!editForm.pricePerHour || isNaN(price)) { showToast("Az ár/óra megadása kötelező.", "error"); return; }
+    if (price < 1) { showToast("Az ár/óra minimum 1 lehet.", "error"); return; }
+    if (price > 10) { showToast("Az ár/óra maximum 10 lehet.", "error"); return; }
+    const hours = parseInt(editForm.estimatedHours);
+    if (!editForm.estimatedHours || isNaN(hours)) { showToast("A becsült órák megadása kötelező.", "error"); return; }
+    if (hours < 1) { showToast("A becsült órák minimum 1 lehet.", "error"); return; }
+    if (hours > 6) { showToast("A becsült órák maximum 6 lehet.", "error"); return; }
+    if (!editForm.categoryId) { showToast("A kategória kiválasztása kötelező.", "error"); return; }
+    try {
+      setEditSaving(true);
+      const { updateListing } = await import("../services/listing.service");
+      await updateListing(editingListing.id, {
+        title: editForm.title,
+        description: editForm.description,
+        pricePerHour: parseFloat(editForm.pricePerHour) || 0,
+        estimatedHours: editForm.estimatedHours ? parseInt(editForm.estimatedHours) : undefined,
+        categoryId: parseInt(editForm.categoryId, 10),
+      });
+      const updated = await getMyListings();
+      setListings(updated);
+      setEditingListing(null);
+      showToast("Hirdetés sikeresen módosítva!", "success");
+    } catch {
+      showToast("Hiba a hirdetés módosításakor.", "error");
+    } finally {
+      setEditSaving(false);
+    }
+  };
+
+  const handleDeleteListing = async (id: number) => {
+    try {
+      setDeletingId(id);
+      const { deleteListing } = await import("../services/listing.service");
+      await deleteListing(id);
+      setListings(prev => prev.filter(l => l.id !== id));
+      showToast("Hirdetés sikeresen törölve.", "success");
+    } catch {
+      showToast("Hiba a hirdetés törlésekor.", "error");
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const handleSave = async () => {
     if (!user || !token) return;
@@ -177,7 +246,7 @@ const Profile = () => {
       setReviewSubmitting(false);
     }
   };
-   // Profilkép feltöltésese
+  // Profilkép feltöltésese
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -369,6 +438,21 @@ const Profile = () => {
                           {item.type === "OFFER" ? "Ajánlat" : "Kereslet"}
                         </span>
                       </div>
+                      <div className="flex gap-2 mt-4 justify-end">
+                        <button
+                          onClick={() => openEditListing(item)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border bg-orange-500/15 border-orange-500/30 text-orange-400 hover:bg-orange-500/25"
+                        >
+                          <Pencil size={12} /> Módosítás
+                        </button>
+                        <button
+                          onClick={() => handleDeleteListing(item.id)}
+                          disabled={deletingId === item.id}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20 disabled:opacity-50"
+                        >
+                          {deletingId === item.id ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />} Törlés
+                        </button>
+                      </div>
                     </CardContent>
                   </Card>
                 )) : (
@@ -378,6 +462,94 @@ const Profile = () => {
                   </div>
                 )}
               </div>
+
+              {/* Szerkesztő modal */}
+              {editingListing && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                  <div className={`w-full max-w-md rounded-2xl shadow-2xl border overflow-y-auto max-h-[90vh] ${isDark ? "bg-[#0f0f14] border-white/10" : "bg-white border-gray-200"}`}>
+                    {/* Modal header */}
+                    <div className={`sticky top-0 flex items-center justify-between p-5 border-b ${isDark ? "bg-[#0f0f14] border-white/10" : "bg-white border-gray-200"}`}>
+                      <h2 className={`text-xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>Hirdetés módosítása</h2>
+                      <button onClick={() => setEditingListing(null)} className={`p-1.5 rounded-lg transition-colors ${isDark ? "hover:bg-white/10 text-gray-400" : "hover:bg-gray-100 text-gray-500"}`}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                      </button>
+                    </div>
+                    {/* Modal body */}
+                    <div className="p-6 space-y-4">
+                      <div>
+                        <label className={`text-sm font-semibold block mb-2 ${labelCls}`}>Cím <span className="text-red-500">*</span></label>
+                        <input
+                          value={editForm.title}
+                          onChange={e => setEditForm(f => ({ ...f, title: e.target.value }))}
+                          className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none transition-all ${isDark ? "bg-[#1a1a1f] border-white/10 text-white placeholder:text-gray-600 focus:border-indigo-500/50" : "bg-white border-gray-200 text-gray-900 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"}`}
+                        />
+                      </div>
+                      <div>
+                        <label className={`text-sm font-semibold block mb-2 ${labelCls}`}>Leírás <span className="text-red-500">*</span></label>
+                        <textarea
+                          value={editForm.description}
+                          onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))}
+                          rows={3}
+                          className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none transition-all resize-none ${isDark ? "bg-[#1a1a1f] border-white/10 text-white placeholder:text-gray-600 focus:border-indigo-500/50" : "bg-white border-gray-200 text-gray-900 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"}`}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className={`text-sm font-semibold block mb-2 ${labelCls}`}>Ár/óra <span className="text-red-500">*</span></label>
+                          <input
+                            type="number"
+                            min={1}
+                            max={10}
+                            value={editForm.pricePerHour}
+                            onChange={e => setEditForm(f => ({ ...f, pricePerHour: e.target.value }))}
+                            className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none transition-all ${isDark ? "bg-[#1a1a1f] border-white/10 text-white focus:border-indigo-500/50" : "bg-white border-gray-200 text-gray-900 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"}`}
+                          />
+                        </div>
+                        <div>
+                          <label className={`text-sm font-semibold block mb-2 ${labelCls}`}>Becsült órák <span className="text-red-500">*</span></label>
+                          <input
+                            type="number"
+                            min={1}
+                            max={6}
+                            value={editForm.estimatedHours}
+                            onChange={e => setEditForm(f => ({ ...f, estimatedHours: e.target.value }))}
+                            className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none transition-all ${isDark ? "bg-[#1a1a1f] border-white/10 text-white focus:border-indigo-500/50" : "bg-white border-gray-200 text-gray-900 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"}`}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className={`text-sm font-semibold block mb-2 ${labelCls}`}>Kategória <span className="text-red-500">*</span></label>
+                        <select
+                          value={editForm.categoryId}
+                          onChange={e => setEditForm(f => ({ ...f, categoryId: e.target.value }))}
+                          className={`w-full px-3 py-2.5 rounded-xl border text-sm outline-none transition-all ${isDark ? "bg-[#1a1a1f] border-white/10 text-white focus:border-indigo-500/50" : "bg-white border-gray-200 text-gray-900 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"}`}
+                        >
+                          <option value="">Válassz kategóriát...</option>
+                          {categories.map(cat => (
+                            <option key={cat.id} value={cat.id} className={isDark ? "bg-[#1a1a2e]" : "bg-white"}>{cat.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                    {/* Modal footer */}
+                    <div className={`flex gap-3 p-5 border-t ${isDark ? "border-white/10" : "border-gray-100"}`}>
+                      <button
+                        onClick={() => setEditingListing(null)}
+                        className={`flex-1 py-2.5 rounded-xl border text-sm font-semibold transition-colors ${isDark ? "border-white/10 text-gray-400 hover:bg-white/5" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}
+                      >
+                        Mégse
+                      </button>
+                      <button
+                        onClick={handleEditSave}
+                        disabled={editSaving}
+                        className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#667eea] to-[#764ba2] text-white text-sm font-bold shadow hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0"
+                      >
+                        {editSaving ? "Mentés..." : "Módosítások mentése"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </TabsContent>
 
             {/* TRANZAKCIÓK */}
@@ -409,11 +581,10 @@ const Profile = () => {
                                 <p className="text-indigo-400 font-black">{tx.agreedHours} óra</p>
                                 <p className={`text-xs ${subText}`}>{tx.totalPrice} kredit</p>
                               </div>
-                              <span className={`text-[10px] font-bold uppercase px-3 py-1.5 rounded-full ${
-                                tx.status === "COMPLETED" ? "bg-green-500/20 text-green-500"
-                                : tx.status === "CANCELLED" ? "bg-red-500/20 text-red-400"
-                                : "bg-yellow-500/20 text-yellow-500"
-                              }`}>
+                              <span className={`text-[10px] font-bold uppercase px-3 py-1.5 rounded-full ${tx.status === "COMPLETED" ? "bg-green-500/20 text-green-500"
+                                  : tx.status === "CANCELLED" ? "bg-red-500/20 text-red-400"
+                                    : "bg-yellow-500/20 text-yellow-500"
+                                }`}>
                                 {tx.status === "PENDING" ? "Folyamatban" : tx.status === "COMPLETED" ? "Teljesítve" : "Törölve"}
                               </span>
                             </div>

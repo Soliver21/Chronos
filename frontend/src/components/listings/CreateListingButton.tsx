@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { createListing } from "../../services/listing.service"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
 import { Textarea } from "../ui/textarea"
-import { X, Plus } from "lucide-react"
+import { X, Plus, ImagePlus, Loader2 } from "lucide-react"
 import { api } from "../../services/api"
 import { useTheme } from "../../context/ThemeContext"
 import { useToast } from "../../context/ToastContext"
@@ -24,6 +24,10 @@ export default function CreateListingButton({ onCreated }: Props) {
   const isDark = theme === "dark"
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [imageUploading, setImageUploading] = useState(false)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imageUrl, setImageUrl] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [categories, setCategories] = useState<Category[]>([])
   const [form, setForm] = useState({
     title: "",
@@ -43,6 +47,33 @@ export default function CreateListingButton({ onCreated }: Props) {
     setForm({ ...form, [name]: value })
   }
 
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImagePreview(URL.createObjectURL(file))
+    setImageUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      const res = await api.post("/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+      setImageUrl(res.data.url)
+    } catch {
+      showToast("Hiba a kép feltöltésekor.", "error")
+      setImagePreview(null)
+      setImageUrl(null)
+    } finally {
+      setImageUploading(false)
+    }
+  }
+
+  const removeImage = () => {
+    setImagePreview(null)
+    setImageUrl(null)
+    if (fileInputRef.current) fileInputRef.current.value = ""
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -54,8 +85,11 @@ export default function CreateListingButton({ onCreated }: Props) {
         estimatedHours: form.estimatedHours ? parseInt(form.estimatedHours) : undefined,
         categoryId: parseInt(form.categoryId, 10),
         type: form.type,
+        imageUrl: imageUrl ?? undefined,
       })
       setForm({ title: "", description: "", pricePerHour: "", estimatedHours: "", categoryId: "", type: "OFFER" })
+      setImagePreview(null)
+      setImageUrl(null)
       setOpen(false)
       onCreated()
       showToast("Hirdetés sikeresen létrehozva!", "success")
@@ -64,8 +98,9 @@ export default function CreateListingButton({ onCreated }: Props) {
       const rawMessage = error?.response?.data?.message
       const errorTranslations: Record<string, string> = {
         "pricePerHour must not be greater than 10": "Az óradíj maximum 10 időkredit lehet.",
+        "pricePerHour must not be less than 1": "Az óradíj nem lehet kevesebb mint 1.",
         "estimatedHours must not be greater than 6": "A becsült órák száma legfeljebb 6 lehet.",
-        "pricePerHour must not be less than 0": "Az óradíj nem lehet negatív.",
+        "pricePerHour must not be less than 0": "Az óradíj nem lehet kevesebb mint 0.",
         "estimatedHours must not be less than 1": "A becsült órák száma legalább 1 legyen.",
         "title should not be empty": "A cím megadása kötelező.",
         "description should not be empty": "A leírás megadása kötelező.",
@@ -117,7 +152,7 @@ export default function CreateListingButton({ onCreated }: Props) {
             <div className={`sticky top-0 flex items-center justify-between p-5 border-b rounded-t-2xl transition-colors duration-300 ${modalBg} ${headerBorder}`}>
               <h2 className={`text-2xl font-bold transition-colors duration-300 ${titleCls}`}>Új hirdetés</h2>
               <button
-                onClick={() => setOpen(false)}
+                onClick={() => { setOpen(false); removeImage() }}
                 className={`p-1.5 rounded-lg transition-colors duration-300 ${closeBtn}`}
               >
                 <X size={24} />
@@ -155,6 +190,52 @@ export default function CreateListingButton({ onCreated }: Props) {
                 />
               </div>
 
+              {/* Kép feltöltés */}
+              <div>
+                <label className={`text-sm font-semibold block mb-2 transition-colors duration-300 ${labelCls}`}>
+                  Kép <span className={`font-normal ${isDark ? "text-gray-500" : "text-gray-400"}`}>(opcionális)</span>
+                </label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+                {imagePreview ? (
+                  <div className="relative rounded-xl overflow-hidden h-36">
+                    <img src={imagePreview} alt="preview" className="w-full h-full object-cover" />
+                    {imageUploading && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <Loader2 size={24} className="animate-spin text-white" />
+                      </div>
+                    )}
+                    {!imageUploading && (
+                      <button
+                        type="button"
+                        onClick={removeImage}
+                        className="absolute top-2 right-2 bg-black/60 hover:bg-black/80 text-white rounded-full p-1 transition-colors"
+                      >
+                        <X size={16} />
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`w-full h-36 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-colors duration-300 ${isDark
+                        ? "border-white/10 hover:border-indigo-500/50 text-gray-500 hover:text-indigo-400"
+                        : "border-slate-200 hover:border-indigo-400 text-slate-400 hover:text-indigo-500"
+                      }`}
+                  >
+                    <ImagePlus size={28} />
+                    <span className="text-sm font-medium">Kép hozzáadása</span>
+                    <span className="text-xs opacity-60">Max 3 MB, JPG/PNG/WEBP</span>
+                  </button>
+                )}
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={`text-sm font-semibold block mb-2 transition-colors duration-300 ${labelCls}`}>
@@ -172,12 +253,13 @@ export default function CreateListingButton({ onCreated }: Props) {
                 </div>
                 <div>
                   <label className={`text-sm font-semibold block mb-2 transition-colors duration-300 ${labelCls}`}>
-                    Becsült órák
+                    Becsült órák <span className="text-red-500">*</span>
                   </label>
                   <Input
                     name="estimatedHours"
                     type="number"
                     placeholder="3"
+                    required
                     value={form.estimatedHours}
                     onChange={handleChange}
                     className={`rounded-lg transition-colors duration-300 ${inputCls}`}
@@ -223,7 +305,7 @@ export default function CreateListingButton({ onCreated }: Props) {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setOpen(false)}
+                  onClick={() => { setOpen(false); removeImage() }}
                   className={`flex-1 rounded-lg font-semibold transition-colors duration-300 ${cancelBtn}`}
                 >
                   Mégse

@@ -6,6 +6,7 @@ export interface ListingCategory {
     id: number;
     name: string;
     slug: string;
+    imageUrl?: string | null;
 }
 
 export interface Listing {

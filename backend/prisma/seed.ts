@@ -18,47 +18,47 @@ async function main() {
   console.log('Creating categories...');
   
   const catHomeMaintenance = await prisma.listingCategory.create({
-    data: { name: 'Home & Maintenance', slug: 'home-maintenance', imageUrl: '/uploads/categories/Home%20%26%20Maintenance.jpg' },
+    data: { name: 'Otthon és karbantartás', slug: 'home-maintenance', imageUrl: '/uploads/categories/Home%20%26%20Maintenance.jpg' },
   });
 
   const catTutoringEducation = await prisma.listingCategory.create({
-    data: { name: 'Tutoring & Education', slug: 'tutoring-education', imageUrl: '/uploads/categories/Tutoring%20%26%20Education.jpg' },
+    data: { name: 'Támogatás és oktatás', slug: 'tutoring-education', imageUrl: '/uploads/categories/Tutoring%20%26%20Education.jpg' },
   });
 
   const catITTechHelp = await prisma.listingCategory.create({
-    data: { name: 'IT & Tech Help', slug: 'it-tech-help', imageUrl: '/uploads/categories/IT%20%26%20Tech%20Help.jpg' },
+    data: { name: 'Informatikai és technikai segítség', slug: 'it-tech-help', imageUrl: '/uploads/categories/IT%20%26%20Tech%20Help.jpg' },
   });
 
   const catErrandsDelivery = await prisma.listingCategory.create({
-    data: { name: 'Errands & Delivery', slug: 'errands-delivery', imageUrl: '/uploads/categories/Errands%20%26%20Delivery.jpg' },
+    data: { name: 'Futárkodás és ház körüli feladatok', slug: 'errands-delivery', imageUrl: '/uploads/categories/Errands%20%26%20Delivery.jpg' },
   });
 
   const catChildcareBabysitting = await prisma.listingCategory.create({
-    data: { name: 'Childcare & Babysitting', slug: 'childcare-babysitting', imageUrl: '/uploads/categories/Childcare%20%26%20Babysitting.jpg' },
+    data: { name: 'Gyermekgondozás és bébiszitterkedés', slug: 'childcare-babysitting', imageUrl: '/uploads/categories/Childcare%20%26%20Babysitting.jpg' },
   });
 
   const catElderlyCare = await prisma.listingCategory.create({
-    data: { name: 'Elderly Care & Assistance', slug: 'elderly-care', imageUrl: '/uploads/categories/Elderly%20Care%20%26%20Assistance.jpg' },
+    data: { name: 'Idősgondozás és segítség', slug: 'elderly-care', imageUrl: '/uploads/categories/Elderly%20Care%20%26%20Assistance.jpg' },
   });
 
   const catHealthWellness = await prisma.listingCategory.create({
-    data: { name: 'Health & Wellness', slug: 'health-wellness', imageUrl: '/uploads/categories/health%20%26%20wellness.jpg' },
+    data: { name: 'Egészséggondozás', slug: 'health-wellness', imageUrl: '/uploads/categories/health%20%26%20wellness.jpg' },
   });
 
   const catCreativeDesign = await prisma.listingCategory.create({
-    data: { name: 'Creative & Design', slug: 'creative-design', imageUrl: '/uploads/categories/Creative%20%26%20Design.jpg' },
+    data: { name: 'Kreatív és design', slug: 'creative-design', imageUrl: '/uploads/categories/Creative%20%26%20Design.jpg' },
   });
 
   const catEventsEntertainment = await prisma.listingCategory.create({
-    data: { name: 'Events & Entertainment', slug: 'events-entertainment', imageUrl: '/uploads/categories/events%26entertainment.jpg' },
+    data: { name: 'Események és szórakozás', slug: 'events-entertainment', imageUrl: '/uploads/categories/events%26entertainment.jpg' },
   });
 
   const catVehiclesTransport = await prisma.listingCategory.create({
-    data: { name: 'Vehicles & Transport', slug: 'vehicles-transport', imageUrl: '/uploads/categories/vechile%26transport.png' },
+    data: { name: 'Járművek és szállítás', slug: 'vehicles-transport', imageUrl: '/uploads/categories/vechile%26transport.png' },
   });
 
   const catMiscellaneous = await prisma.listingCategory.create({
-    data: { name: 'Miscellaneous', slug: 'miscellaneous', imageUrl: '/uploads/categories/vegyes.jpg' },
+    data: { name: 'Egyéb', slug: 'miscellaneous', imageUrl: '/uploads/categories/vegyes.jpg' },
   });
 
   console.log(`✅ Created ${11} categories`);
@@ -280,6 +280,7 @@ async function main() {
 
   console.log('Creating transactions...');
 
+  // transaction1: COMPLETED – user3 → user1, listing1 (Dell laptop)
   const transaction1 = await prisma.transaction.create({
     data: {
       clientId: user3.id,
@@ -288,9 +289,13 @@ async function main() {
       agreedHours: 2,
       totalPrice: 100,
       status: TransactionStatus.COMPLETED,
+      createdAt: new Date('2026-03-06T10:00:00'),
+      completedAt: new Date('2026-03-07T15:30:00'),
+      updatedAt: new Date('2026-03-07T15:30:00'),
     },
   });
 
+  // transaction2: COMPLETED – user4 → user2, listing2 (kerékpár javítás)
   const transaction2 = await prisma.transaction.create({
     data: {
       clientId: user4.id,
@@ -299,9 +304,13 @@ async function main() {
       agreedHours: 3,
       totalPrice: 150,
       status: TransactionStatus.COMPLETED,
+      createdAt: new Date('2026-03-12T09:00:00'),
+      completedAt: new Date('2026-03-13T14:00:00'),
+      updatedAt: new Date('2026-03-13T14:00:00'),
     },
   });
 
+  // transaction3: COMPLETED – user5 → user1, listing3 (bio házi lekvár)
   const transaction3 = await prisma.transaction.create({
     data: {
       clientId: user5.id,
@@ -310,9 +319,13 @@ async function main() {
       agreedHours: 4,
       totalPrice: 200,
       status: TransactionStatus.COMPLETED,
+      createdAt: new Date('2026-03-20T11:00:00'),
+      completedAt: new Date('2026-03-21T16:00:00'),
+      updatedAt: new Date('2026-03-21T16:00:00'),
     },
   });
 
+  // transaction4: PENDING – user1 → user3, listing6 (PS4/Xbox kerestetik)
   const transaction4 = await prisma.transaction.create({
     data: {
       clientId: user1.id,
@@ -321,9 +334,12 @@ async function main() {
       agreedHours: 2,
       totalPrice: 80,
       status: TransactionStatus.PENDING,
+      createdAt: new Date('2026-03-25T13:00:00'),
+      updatedAt: new Date('2026-03-25T13:00:00'),
     },
   });
 
+  // transaction5: COMPLETED – user2 → user5, listing7 (költözős segítség)
   const transaction5 = await prisma.transaction.create({
     data: {
       clientId: user2.id,
@@ -332,9 +348,13 @@ async function main() {
       agreedHours: 5,
       totalPrice: 250,
       status: TransactionStatus.COMPLETED,
+      createdAt: new Date('2026-03-19T08:00:00'),
+      completedAt: new Date('2026-03-19T18:00:00'),
+      updatedAt: new Date('2026-03-19T18:00:00'),
     },
   });
 
+  // transaction6: CANCELLED – user3 → user4, listing4 (Python oktatás)
   const transaction6 = await prisma.transaction.create({
     data: {
       clientId: user3.id,
@@ -343,9 +363,13 @@ async function main() {
       agreedHours: 3,
       totalPrice: 120,
       status: TransactionStatus.CANCELLED,
+      createdAt: new Date('2026-03-08T10:00:00'),
+      cancelledAt: new Date('2026-03-10T09:00:00'),
+      updatedAt: new Date('2026-03-10T09:00:00'),
     },
   });
 
+  // transaction7: PENDING – user4 → user2, listing5 (antik könyvek)
   const transaction7 = await prisma.transaction.create({
     data: {
       clientId: user4.id,
@@ -354,9 +378,12 @@ async function main() {
       agreedHours: 2,
       totalPrice: 90,
       status: TransactionStatus.PENDING,
+      createdAt: new Date('2026-03-26T14:30:00'),
+      updatedAt: new Date('2026-03-26T14:30:00'),
     },
   });
 
+  // transaction8: COMPLETED – user1 → user4, listing4 (Python oktatás)
   const transaction8 = await prisma.transaction.create({
     data: {
       clientId: user1.id,
@@ -365,9 +392,13 @@ async function main() {
       agreedHours: 2,
       totalPrice: 100,
       status: TransactionStatus.COMPLETED,
+      createdAt: new Date('2026-03-14T10:00:00'),
+      completedAt: new Date('2026-03-15T12:00:00'),
+      updatedAt: new Date('2026-03-15T12:00:00'),
     },
   });
 
+  // transaction9: COMPLETED – user3 → user2, listing2 (kerékpár javítás)
   const transaction9 = await prisma.transaction.create({
     data: {
       clientId: user3.id,
@@ -376,9 +407,13 @@ async function main() {
       agreedHours: 1,
       totalPrice: 50,
       status: TransactionStatus.COMPLETED,
+      createdAt: new Date('2026-03-07T09:00:00'),
+      completedAt: new Date('2026-03-07T11:30:00'),
+      updatedAt: new Date('2026-03-07T11:30:00'),
     },
   });
 
+  // transaction10: COMPLETED – user2 → user4, listing4 (Python oktatás)
   const transaction10 = await prisma.transaction.create({
     data: {
       clientId: user2.id,
@@ -387,9 +422,13 @@ async function main() {
       agreedHours: 3,
       totalPrice: 150,
       status: TransactionStatus.COMPLETED,
+      createdAt: new Date('2026-03-15T14:00:00'),
+      completedAt: new Date('2026-03-16T17:00:00'),
+      updatedAt: new Date('2026-03-16T17:00:00'),
     },
   });
 
+  // transaction11: COMPLETED – user2 → user1, listing1 (Dell laptop)
   const transaction11 = await prisma.transaction.create({
     data: {
       clientId: user2.id,
@@ -398,9 +437,13 @@ async function main() {
       agreedHours: 1,
       totalPrice: 50,
       status: TransactionStatus.COMPLETED,
+      createdAt: new Date('2026-03-03T10:00:00'),
+      completedAt: new Date('2026-03-03T13:00:00'),
+      updatedAt: new Date('2026-03-03T13:00:00'),
     },
   });
 
+  // transaction12: COMPLETED – user4 → user1, listing3 (bio házi lekvár)
   const transaction12 = await prisma.transaction.create({
     data: {
       clientId: user4.id,
@@ -409,9 +452,13 @@ async function main() {
       agreedHours: 2,
       totalPrice: 60,
       status: TransactionStatus.COMPLETED,
+      createdAt: new Date('2026-03-11T11:00:00'),
+      completedAt: new Date('2026-03-12T10:00:00'),
+      updatedAt: new Date('2026-03-12T10:00:00'),
     },
   });
 
+  // transaction13: COMPLETED – user5 → user1, listing1 (Dell laptop)
   const transaction13 = await prisma.transaction.create({
     data: {
       clientId: user5.id,
@@ -420,10 +467,14 @@ async function main() {
       agreedHours: 1,
       totalPrice: 50,
       status: TransactionStatus.COMPLETED,
+      createdAt: new Date('2026-03-22T09:00:00'),
+      completedAt: new Date('2026-03-22T12:00:00'),
+      updatedAt: new Date('2026-03-22T12:00:00'),
     },
   });
 
   // Extra tranzakciók Kiss Jánosnak (provider) az értékelések teszteléséhez
+  // transaction14: COMPLETED – user2 → user1, listing3
   const transaction14 = await prisma.transaction.create({
     data: {
       clientId: user2.id,
@@ -432,9 +483,13 @@ async function main() {
       agreedHours: 1,
       totalPrice: 30,
       status: TransactionStatus.COMPLETED,
+      createdAt: new Date('2026-03-04T10:00:00'),
+      completedAt: new Date('2026-03-04T12:30:00'),
+      updatedAt: new Date('2026-03-04T12:30:00'),
     },
   });
 
+  // transaction15: COMPLETED – user4 → user1, listing1
   const transaction15 = await prisma.transaction.create({
     data: {
       clientId: user4.id,
@@ -443,9 +498,13 @@ async function main() {
       agreedHours: 1,
       totalPrice: 50,
       status: TransactionStatus.COMPLETED,
+      createdAt: new Date('2026-03-13T09:00:00'),
+      completedAt: new Date('2026-03-13T11:00:00'),
+      updatedAt: new Date('2026-03-13T11:00:00'),
     },
   });
 
+  // transaction16: COMPLETED – user3 → user1, listing3
   const transaction16 = await prisma.transaction.create({
     data: {
       clientId: user3.id,
@@ -454,9 +513,13 @@ async function main() {
       agreedHours: 2,
       totalPrice: 60,
       status: TransactionStatus.COMPLETED,
+      createdAt: new Date('2026-03-09T14:00:00'),
+      completedAt: new Date('2026-03-10T10:00:00'),
+      updatedAt: new Date('2026-03-10T10:00:00'),
     },
   });
 
+  // transaction17: COMPLETED – user5 → user1, listing1
   const transaction17 = await prisma.transaction.create({
     data: {
       clientId: user5.id,
@@ -465,6 +528,9 @@ async function main() {
       agreedHours: 1,
       totalPrice: 50,
       status: TransactionStatus.COMPLETED,
+      createdAt: new Date('2026-03-23T10:00:00'),
+      completedAt: new Date('2026-03-23T13:00:00'),
+      updatedAt: new Date('2026-03-23T13:00:00'),
     },
   });
 
