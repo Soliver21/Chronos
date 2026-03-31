@@ -286,21 +286,26 @@ const Profile = () => {
   const reviewFormBg = isDark ? "bg-white/5 border-white/10" : "bg-gray-50 border-gray-200";
   const reviewTextarea = isDark ? "bg-[#1a1a1f] border-white/10 text-white placeholder-gray-600" : "bg-white border-gray-200 text-gray-900 placeholder-gray-400";
 
-  const tabTriggerCls = `rounded-none border-b-2 border-transparent px-2 pb-2.5 pt-2 font-semibold text-[11px] sm:text-xs md:text-sm text-gray-500
+  const tabTriggerCls = `rounded-none cursor-pointer border-b-2 border-transparent px-2 pb-2.5 pt-2 font-semibold text-[11px] sm:text-xs md:text-sm text-gray-500
     data-[state=active]:border-indigo-500 ${isDark ? "data-[state=active]:text-white" : "data-[state=active]:text-gray-900"}
     bg-transparent transition-all shadow-none whitespace-nowrap flex-1 text-center`;
 
   const statCards = [
-    { label: "Összes hirdetés", value: listings.length },
-    { label: "Kapott értékelések", value: stats?.totalReviews ?? 0 },
-    {
-      label: "Átlag értékelés",
-      value: stats?.averageRating != null && stats.averageRating > 0
-        ? `${Number(stats.averageRating).toFixed(1)} / 5 ⭐`
-        : "N/A",
-    },
-    { label: "Egyenleg", value: `${profileData?.balance ?? 0} óra` },
-  ];
+  { label: "Összes hirdetés", value: listings.length },
+  { label: "Kapott értékelések", value: stats?.totalReviews ?? 0 },
+  {
+    label: "Átlag értékelés",
+    value: stats?.averageRating != null && stats.averageRating > 0
+      ? (
+          <span className="flex items-center gap-2">
+            {Number(stats.averageRating).toFixed(1)} / 5 
+            <Star className="text-violet-500 w-6 h-6" />
+          </span>
+        )
+      : "N/A",
+  },
+  { label: "Egyenleg", value: `${profileData?.balance ?? 0} óra` },
+];
 
   if (loading && !profileData) {
     return (

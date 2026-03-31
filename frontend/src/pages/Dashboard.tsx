@@ -45,13 +45,13 @@ function buildBalanceChartData(transactions: Transaction[], userId: number, curr
     const date = new Date(tx.completedAt ?? tx.updatedAt);
     const isProvider = tx.provider?.id === userId;
     const change = isProvider ? tx.totalPrice : -tx.totalPrice;
-    
+
     runningBalance += change;
 
-    return { 
-      label: date.toLocaleDateString("hu-HU", { month: "short", day: "numeric" }), 
-      egyenleg: runningBalance, 
-      változás: change 
+    return {
+      label: date.toLocaleDateString("hu-HU", { month: "short", day: "numeric" }),
+      egyenleg: runningBalance,
+      változás: change
     };
   });
 
@@ -74,7 +74,7 @@ const CustomTooltip = ({ active, payload, label, isDark }: any) => {
   const bg = isDark ? "bg-[#1a1a2e] border-white/10" : "bg-white border-gray-200";
   const textCls = isDark ? "text-white" : "text-gray-900";
   const subCls = isDark ? "text-gray-400" : "text-gray-500";
-  
+
   return (
     <div className={`rounded-xl border px-4 py-3 shadow-xl text-sm ${bg}`}>
       <p className={`font-bold mb-1 ${textCls}`}>{label}</p>
@@ -185,8 +185,8 @@ const Dashboard = () => {
         {/* Statisztikák */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard isDark={isDark} title="Jelenlegi egyenleg" value={`${profileData?.balance ?? 0} óra`} icon={<Clock size={20} className="text-indigo-400" />} />
-          <StatCard isDark={isDark} title="Folyamatban" value={pendingCount} icon={<AlertCircle size={20} className="text-yellow-400" />} />
-          <StatCard isDark={isDark} title="Teljesített" value={completedCount} icon={<CheckCircle size={20} className="text-green-400" />} />
+          <StatCard isDark={isDark} title="Folyamatban lévő tranzakciók" value={pendingCount} icon={<AlertCircle size={20} className="text-yellow-400" />} />
+          <StatCard isDark={isDark} title="Teljesített tranzakciók" value={completedCount} icon={<CheckCircle size={20} className="text-green-400" />} />
           <StatCard isDark={isDark} title="Aktív hirdetések" value={userListings.length} icon={<Package size={20} className="text-purple-400" />} />
         </div>
 
@@ -246,10 +246,10 @@ const Dashboard = () => {
                     const isLast = i === recentTx.length - 1;
                     const statusIcon =
                       tx.status === "COMPLETED" ? <CheckCircle size={14} className="text-green-500" /> :
-                      tx.status === "CANCELLED" ? <XCircle size={14} className="text-red-400" /> :
-                      <AlertCircle size={14} className="text-yellow-500" />;
+                        tx.status === "CANCELLED" ? <XCircle size={14} className="text-red-400" /> :
+                          <AlertCircle size={14} className="text-yellow-500" />;
                     const amountCls = isProvider ? "text-green-400" : "text-red-400";
-                    
+
                     return (
                       <div key={tx.id} className={`px-5 py-4 flex items-center gap-3 ${!isLast ? `border-b ${dividerCls}` : ""}`}>
                         <div className="flex-1 min-w-0">
@@ -334,7 +334,20 @@ const Dashboard = () => {
                 { label: "Összes tranzakció", value: transactions.length, icon: <TrendingUp size={15} className="text-indigo-400" /> },
                 { label: "Megszerzett órák", value: `+${transactions.filter((tx) => tx.status === "COMPLETED" && tx.provider?.id === user?.id).reduce((s, tx) => s + tx.totalPrice, 0)} h`, icon: <TrendingUp size={15} className="text-green-400" /> },
                 { label: "Elköltött órák", value: `-${transactions.filter((tx) => tx.status === "COMPLETED" && tx.client?.id === user?.id).reduce((s, tx) => s + tx.totalPrice, 0)} h`, icon: <TrendingDown size={15} className="text-red-400" /> },
-                { label: "Átlag értékelés", value: stats?.averageRating && stats.averageRating > 0 ? `${Number(stats.averageRating).toFixed(1)} / 5 ⭐` : "–", icon: <Star size={15} className="text-yellow-400" /> },
+                {
+                  label: "Átlag értékelés",
+
+                  value: stats?.averageRating && stats.averageRating > 0
+                    ? (
+                      <span className="flex items-center gap-1.5">
+                        {Number(stats.averageRating).toFixed(1)} / 5
+
+                        <Star className="text-violet-500 w-4 h-4" />
+                      </span>
+                    )
+                    : "–",
+                  icon: <Star size={15} className="text-violet-500" />
+                },
                 { label: "Bizalmi szint", value: profileData?.trustLevel ?? "NEWCOMER", icon: <CheckCircle size={15} className="text-purple-400" /> },
               ].map(({ label, value, icon }) => (
                 <div key={label} className="flex items-center justify-between text-sm">

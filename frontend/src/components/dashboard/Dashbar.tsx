@@ -73,7 +73,7 @@ const Dashbar = () => {
         <div className="hidden lg:flex items-center gap-3">
           <button
             onClick={toggleTheme}
-            className={`w-9 h-9 rounded-lg flex items-center justify-center transition-colors ${
+            className={`w-9 h-9 cursor-pointer rounded-lg flex items-center justify-center transition-colors ${
               isDark ? "hover:bg-white/10 text-yellow-400" : "hover:bg-gray-100 text-indigo-600"
             }`}
             title={isDark ? "Váltás világos módra" : "Váltás sötét módra"}
@@ -138,7 +138,7 @@ const Dashbar = () => {
             {mobileNavLink("/profile", "Profilom", "bi-person")}
             <button
               onClick={toggleTheme}
-              className={`w-full flex items-center gap-2 py-2.5 px-3 rounded-lg text-sm transition-colors ${
+              className={`w-full cursor-pointer flex items-center gap-2 py-2.5 px-3 rounded-lg text-sm transition-colors ${
                 isDark ? "text-gray-400 hover:text-white hover:bg-white/5" : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
               }`}
             >
