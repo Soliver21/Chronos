@@ -291,14 +291,14 @@ export default function ListingCard({ listing, onClaimed }: Props) {
                     <DollarSign size={16} className={priceIcon} />
                     <span className={`text-lg font-bold ${priceVal}`}>{listing.pricePerHour}</span>
                   </div>
-                  <div className={`text-xs text-center font-semibold ${priceLabel}`}>$/hr</div>
+                  <div className={`text-xs text-center font-semibold ${priceLabel}`}>kr/óra</div>
                 </div>
                 <div className={`rounded-lg p-3 border ${hoursBox}`}>
                   <div className="flex items-center justify-center gap-1 mb-1">
                     <Clock size={16} className={hoursIcon} />
                     <span className={`text-lg font-bold ${hoursVal}`}>{listing.estimatedHours || "–"}</span>
                   </div>
-                  <div className={`text-xs text-center font-semibold ${hoursLabel}`}>hours</div>
+                  <div className={`text-xs text-center font-semibold ${hoursLabel}`}>óra</div>
                 </div>
               </div>
 

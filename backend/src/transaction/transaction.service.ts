@@ -45,9 +45,6 @@ export class TransactionService {
     }
   }
 
-
-
-
   async createTransaction(clientId: number, dto: CreateTransactionDto) {
     const listingId = parseInt(dto.listingId, 10);
 
@@ -151,7 +148,7 @@ export class TransactionService {
   }
 
   async completeTransaction(txId: number, clientId: number) {
-    return this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const transaction = await tx.transaction.findUnique({
         where: { id: txId },
         include: {
@@ -209,14 +206,16 @@ export class TransactionService {
         },
       });
 
-      await this.updateTrustLevel(transaction.providerId);
-
       if (transaction.listingId) {
         await tx.listing.delete({ where: { id: transaction.listingId } });
       }
 
-      return updatedTransaction;
-    }, { timeout: 15000 });
+      return { updatedTransaction, providerId: transaction.providerId };
+    });
+
+    await this.updateTrustLevel(result.providerId);
+
+    return result.updatedTransaction;
   }
 
 
