@@ -7,6 +7,7 @@ import { CreateWebsiteReviewDTO } from "./dto/create-website-review.dto";
 export class ReviewService {
     constructor(private readonly prisma: PrismaService) {}
 
+    // Létrehoz egy értékelést egy lezárt tranzakcióhoz; a másik felet értékeli, és frissíti az átlagot.
     async create(dto: CreateReviewDTO, reviewerId: number) {
         const transactionId = dto.transactionId;
 
@@ -52,6 +53,7 @@ export class ReviewService {
         return review;
     }
 
+    // Visszaadja az adott felhasználóról szóló összes értékelést.
     async getUserReviews(userId: number) {
         return await this.prisma.review.findMany({
             where: { userId },
@@ -66,6 +68,7 @@ export class ReviewService {
         });
     }
 
+    // Létrehoz egy weboldal-értékelést a bejelentkezett felhasználótól.
     async createWebsiteReview(dto: CreateWebsiteReviewDTO, userId: number) {
         return await this.prisma.websiteReview.create({
             data: {
@@ -81,6 +84,7 @@ export class ReviewService {
         });
     }
 
+    // Visszaadja a legutóbbi weboldal-értékeléseket (alapértelmezetten az utolsó 10-et).
     async getServiceReviews(limit: number = 10) {
         return await this.prisma.websiteReview.findMany({
             take: limit,
@@ -93,6 +97,7 @@ export class ReviewService {
         });
     }
 
+    // Kiszámítja és menti a felhasználó összes kapott értékelésének átlagát.
     private async updateUserAverageRating(userId: number) {
         const reviews = await this.prisma.review.findMany({
             where: { userId },

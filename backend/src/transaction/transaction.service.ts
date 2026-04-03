@@ -14,12 +14,14 @@ export class TransactionService {
 
 
   
+  // Meghatározza a bizalmi szintet a lezárt tranzakciók száma alapján.
   private calculateTrustLevel(completedTxCount: number): TrustLevel {
     if (completedTxCount >= 20) return TrustLevel.VETERAN;
     if (completedTxCount >= 5) return TrustLevel.TRUSTED;
     return TrustLevel.NEWCOMER;
   }
 
+  // Frissíti a szolgáltató bizalmi szintjét a lezárt tranzakcióinak száma alapján.
   private async updateTrustLevel(userId: number): Promise<void> {
     const completedCount = await this.prisma.transaction.count({
       where: {
@@ -45,6 +47,7 @@ export class TransactionService {
     }
   }
 
+  // Létrehoz egy tranzakciót egy hirdetéshez: ellenőrzi az egyenleget, levonja a krediteket, és elmenti a hirdetés adatait snapshotként.
   async createTransaction(clientId: number, dto: CreateTransactionDto) {
     const listingId = parseInt(dto.listingId, 10);
 
@@ -100,6 +103,10 @@ export class TransactionService {
           agreedHours: dto.agreedHours,
           totalPrice,
           status: TransactionStatus.PENDING,
+          listingTitle: listing.title,
+          listingDescription: listing.description,
+          listingImageUrl: listing.imageUrl,
+          listingType: listing.type,
         },
         include: {
           client: { select: { id: true, name: true, avatar: true } },
@@ -119,6 +126,7 @@ export class TransactionService {
     });
   }
 
+  // Visszaad egy tranzakciót azonosító alapján; ha nem létezik, 404-et dob.
   async findById(id: number) {
     const transaction = await this.prisma.transaction.findUnique({
       where: { id },
@@ -147,6 +155,7 @@ export class TransactionService {
     return transaction;
   }
 
+  // Lezárja a tranzakciót: átutalja a krediteket a szolgáltatónak, törli a hirdetést, és frissíti a bizalmi szintet.
   async completeTransaction(txId: number, clientId: number) {
     const result = await this.prisma.$transaction(async (tx) => {
       const transaction = await tx.transaction.findUnique({
@@ -222,6 +231,7 @@ export class TransactionService {
 
 
 
+  // Visszavonja a tranzakciót: visszatéríti a krediteket a megrendelőnek; csak a megrendelő vagy a szolgáltató kezdeményezheti.
   async cancelTransaction(txId: number, userId: number) {
     return this.prisma.$transaction(async (tx) => {
       const transaction = await tx.transaction.findUnique({
@@ -292,6 +302,7 @@ export class TransactionService {
 
 
   
+  // Visszaadja a felhasználó összes tranzakcióját (ahol megrendelőként vagy szolgáltatóként szerepel), időrendben csökkenően.
   async getUserTransactions(userId: number) {
     const transactions = await this.prisma.transaction.findMany({
       where: {

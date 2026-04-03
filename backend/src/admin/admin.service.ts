@@ -14,7 +14,7 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 export class AdminService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // Returns platform-wide counts for the admin dashboard.
+  // Visszaadja a platform összesített adatait az admin dashboardhoz.
   async getStats() {
     const [totalUsers, totalListings, totalReviews, pendingTransactions, completedTransactions, cancelledTransactions] = await Promise.all(
     [
@@ -39,7 +39,7 @@ export class AdminService {
     };
   }
 
-  // Returns all users with their role, trust level and active status.
+  // Visszaadja az összes felhasználót szereppel, bizalmi szinttel és aktív státusszal.
   async getAllUsers() {
     return this.prisma.user.findMany({
       select: {
@@ -56,7 +56,7 @@ export class AdminService {
     });
   }
 
-  // Updates a user's role, trust level or active (ban) status.
+  // Frissíti a felhasználó szerepét, bizalmi szintjét vagy aktív (tiltott) státuszát.
   async adminUpdateUser(id: number, dto: AdminUpdateUserDto) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException('User not found');
@@ -75,21 +75,21 @@ export class AdminService {
     });
   }
 
-  // Deletes any listing regardless of who owns it.
+  // Töröl egy hirdetést függetlenül attól, ki a tulajdonosa.
   async adminDeleteListing(id: number) {
     const listing = await this.prisma.listing.findUnique({ where: { id } });
     if (!listing) throw new NotFoundException('Listing not found');
     return this.prisma.listing.delete({ where: { id } });
   }
 
-  // Deletes a review by ID.
+  // Töröl egy értékelést azonosító alapján.
   async adminDeleteReview(id: number) {
     const review = await this.prisma.review.findUnique({ where: { id } });
     if (!review) throw new NotFoundException('Review not found');
     return this.prisma.review.delete({ where: { id } });
   }
 
-  // Force-completes or force-cancels a PENDING transaction as admin, handling balance transfers.
+  // Admin jogon lezár vagy töröl egy PENDING tranzakciót, és kezeli az egyenleg-átadást.
   async adminResolveTransaction(id: number, dto: ResolveTransactionDto) {
     return this.prisma.$transaction(async (tx) => {
       const transaction = await tx.transaction.findUnique({
@@ -108,7 +108,7 @@ export class AdminService {
       }
 
       if (dto.action === ResolveAction.COMPLETE) {
-        // Release funds to provider
+        // Összeg átutalása a szolgáltatónak
         await tx.user.update({
           where: { id: transaction.providerId },
           data: { balance: { increment: transaction.totalPrice } },
@@ -124,7 +124,7 @@ export class AdminService {
           },
         });
       } else {
-        // Refund client
+        // Visszatérítés a megrendelőnek
         await tx.user.update({
           where: { id: transaction.clientId },
           data: { balance: { increment: transaction.totalPrice } },
@@ -143,9 +143,9 @@ export class AdminService {
     });
   }
 
-  // ── Chart data
+  // ── Diagram adatok
 
-  // Returns user breakdown by trust level, role and active/banned status, plus daily new-user counts for the last 30 days.
+  // Visszaadja a felhasználók megoszlását bizalmi szint, szerep és aktív/tiltott státusz szerint, valamint az elmúlt 30 nap napi regisztrációit.
   async getUserChartData() {
     const [byTrustLevel, byRole, activeCount, bannedCount] = await Promise.all([
       this.prisma.user.groupBy({ by: ['trustLevel'], _count: { _all: true } }),
@@ -154,7 +154,7 @@ export class AdminService {
       this.prisma.user.count({ where: { isActive: false } }),
     ]);
 
-    // Daily registrations for the last 30 days (raw SQL for date truncation)
+    // Napi regisztrációk az elmúlt 30 napban (nyers SQL dátum-csonkítással)
     const registrationsLast30Days: { date: string; count: number }[] =
       await this.prisma.$queryRaw`
         SELECT DATE(createdAt) AS date, COUNT(*) AS count
@@ -175,7 +175,7 @@ export class AdminService {
     };
   }
 
-  // Returns listing breakdown by category (with names) and by type (OFFER/REQUEST), plus daily new-listing counts for the last 30 days.
+  // Visszaadja a hirdetések megoszlását kategória és típus (OFFER/REQUEST) szerint, valamint az elmúlt 30 nap napi hirdetés-létrehozási számait.
   async getListingChartData() {
     const [byType, categories] = await Promise.all([
       this.prisma.listing.groupBy({ by: ['type'], _count: { _all: true } }),
@@ -188,7 +188,7 @@ export class AdminService {
       }),
     ]);
 
-    // Daily listing creation for the last 30 days
+    // Napi hirdetés-létrehozás az elmúlt 30 napban
     const createdLast30Days: { date: string; count: number }[] =
       await this.prisma.$queryRaw`
         SELECT DATE(createdAt) AS date, COUNT(*) AS count
@@ -209,7 +209,7 @@ export class AdminService {
   }
 
 
-  // Returns the distribution of review ratings from 1 to 5 and the overall average rating.
+  // Visszaadja az értékelések eloszlását 1-től 5-ig és az átlagos értékelést.
   async getReviewChartData() {
     const distribution = await this.prisma.review.groupBy({
       by: ['rating'],
@@ -225,7 +225,7 @@ export class AdminService {
     };
   }
 
-  // Returns all platform transactions for admin view.
+  // Visszaadja az összes tranzakciót a platformon, admin nézethez.
   async getAllTransactions() {
     return this.prisma.transaction.findMany({
       include: {
@@ -237,19 +237,19 @@ export class AdminService {
     });
   }
 
-  // Creates a new listing category.
+  // Létrehoz egy új hirdetési kategóriát.
   async createCategory(dto: CreateCategoryDto) {
     return this.prisma.listingCategory.create({ data: dto });
   }
 
-  //Updates the name or slug of an existing category.
+  // Frissíti egy létező kategória nevét vagy slug-ját.
   async updateCategory(id: number, dto: UpdateCategoryDto) {
     const category = await this.prisma.listingCategory.findUnique({ where: { id } });
     if (!category) throw new NotFoundException('Category not found');
     return this.prisma.listingCategory.update({ where: { id }, data: dto });
   }
 
-  //Deletes a category by ID.
+  // Töröl egy kategóriát azonosító alapján.
   async deleteCategory(id: number) {
     const category = await this.prisma.listingCategory.findUnique({ where: { id } });
     if (!category) throw new NotFoundException('Category not found');

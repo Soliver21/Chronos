@@ -5,6 +5,7 @@ import { PrismaService } from "../prisma/prisma.service";
 export class CategoryService {
   constructor(private readonly prisma: PrismaService) {}
 
+  // Visszaadja az összes hirdetési kategóriát névsorrendben.
   async findAll() {
     return this.prisma.listingCategory.findMany({
       orderBy: { name: "asc" },

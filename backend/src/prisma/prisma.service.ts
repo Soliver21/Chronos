@@ -2,6 +2,7 @@ import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import {PrismaMariaDb} from '@prisma/adapter-mariadb';
 
+// Az adatbázis-kapcsolatot kezelő szolgáltatás. Modul indításakor csatlakozik, leállításakor bontja a kapcsolatot.
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
     constructor() {

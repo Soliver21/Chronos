@@ -5,10 +5,12 @@ import { PrismaService } from './prisma/prisma.service';
 export class AppService {
   constructor(private readonly prisma: PrismaService) {}
  
+  // Teszt endpoint – visszaad egy üdvözlő szöveget.
   getHello(): string {
     return 'Hello World!';
   }
- 
+
+  // Nyilvánosan elérhető platformstatisztikákat ad vissza (felhasználók, tranzakciók, értékelések).
   async getPublicStats() {
     const [totalUsers, completedTransactions, reviews] = await Promise.all([
       this.prisma.user.count(),

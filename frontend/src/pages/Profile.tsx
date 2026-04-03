@@ -567,7 +567,7 @@ const Profile = () => {
                     const isPending = tx.status === "PENDING";
                     const isCompleted = tx.status === "COMPLETED";
                     const isLoading = txActionLoading === tx.id;
-                    const txTitle = tx.listing?.title ?? tx.listingTitle ?? allListings.find(l => l.id === tx.listing?.id)?.title ?? `Tranzakció #${tx.id}`;
+                    const txTitle = tx.listing?.title ?? tx.listingTitle ?? `Tranzakció #${tx.id}`;
                     // Értékelés írható: lezárt tranzakció, ahol részt vett a user, és még nem értékelt
                     const canReview = isCompleted && (isClient || isProvider) && !reviewedTxIds.has(tx.id);
                     const isReviewOpen = reviewOpen === tx.id;

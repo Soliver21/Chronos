@@ -6,6 +6,7 @@ import { UpdateUserDTO } from "./dto/update-user.dto";
 export class UserService {
     constructor(private readonly prisma: PrismaService) {}
 
+    // Visszaad egy felhasználót azonosító alapján (jelszó nélkül); ha nem létezik, 404-et dob.
     async findById(id: number) {
         const user = await this.prisma.user.findUnique({
             where: { id }, select: { id: true, name: true, email: true, bio: true, avatar: true, balance: true, trustLevel: true, averageRating: true },
@@ -14,6 +15,7 @@ export class UserService {
         return user;
     }
 
+    // Frissíti a felhasználó profiladatait (név, bio, avatar stb.).
     async updateUser(id: number, user: UpdateUserDTO) {
         return await this.prisma.user.update({
             where: { id },
@@ -31,6 +33,7 @@ export class UserService {
         });
     }
 
+    // Visszaadja a felhasználó statisztikáit: tranzakciók, értékelések, elköltött/kapott összeg, átlagos értékelés.
     async getUserStatistics(id: number) {
         const [clientTransactions, providerTransactions, reviews] = await Promise.all([
             this.prisma.transaction.findMany({

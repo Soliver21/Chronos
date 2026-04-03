@@ -12,6 +12,7 @@ export class AuthService {
         private readonly prisma: PrismaService,
     ) {}
 
+    // Regisztrál egy új felhasználót: ellenőrzi az email egyediségét, hash-eli a jelszót, majd JWT tokent ad vissza.
     async authRegister(user: RegisterUserDto) {
         const exists = await this.prisma.user.findUnique({
             where: { email: user.email },
@@ -54,6 +55,7 @@ export class AuthService {
         };
     }
 
+    // Bejelentkeztet egy meglévő felhasználót: ellenőrzi az email/jelszó párost, majd JWT tokent ad vissza.
     async authLogin(user: LoginUserDto) {
         const loginUser = await this.prisma.user.findUnique({
             where: { email: user.email },

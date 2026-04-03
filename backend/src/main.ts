@@ -21,7 +21,7 @@ async function bootstrap() {
     }),
   );
   const config = new DocumentBuilder()
-    .setTitle('My API')
+    .setTitle('Chronos API dokumentáció')
     .setDescription('Nest.js REST API Swagger UI')
     .setVersion('1.0')
     .addBearerAuth()
