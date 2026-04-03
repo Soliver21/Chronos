@@ -19,7 +19,7 @@ import {
   Tooltip,
 } from "recharts";
 import { getUserById, getUserStats } from "../services/user.service";
-import { getMyListings } from "../services/listing.service";
+import { getMyListings, getListings } from "../services/listing.service";
 import { getMyTransactions } from "../services/transaction.service";
 import type { User, UserStats } from "../types/user.types";
 import type { Listing } from "../types/listing.types";
@@ -99,6 +99,7 @@ const Dashboard = () => {
   const [profileData, setProfileData] = useState<User | null>(null);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [userListings, setUserListings] = useState<Listing[]>([]);
+  const [allListings, setAllListings] = useState<Listing[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -107,16 +108,18 @@ const Dashboard = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [userData, statsData, listingsData, txData] = await Promise.all([
+        const [userData, statsData, listingsData, txData, allListingsData] = await Promise.all([
           getUserById(user.id),
           getUserStats(user.id),
           getMyListings(),
           getMyTransactions(),
+          getListings(),
         ]);
         setProfileData(userData);
         setStats(statsData);
         setUserListings(listingsData);
         setTransactions(txData);
+        setAllListings(allListingsData);
       } catch (err) {
         console.error("Hiba a dashboard adatok betöltésekor:", err);
       } finally {
@@ -254,7 +257,7 @@ const Dashboard = () => {
                       <div key={tx.id} className={`px-5 py-4 flex items-center gap-3 ${!isLast ? `border-b ${dividerCls}` : ""}`}>
                         <div className="flex-1 min-w-0">
                           <p className={`text-sm font-semibold truncate ${isDark ? "text-gray-200" : "text-gray-800"}`}>
-                            {tx.listing?.title ?? tx.listingTitle ?? `Tranzakció #${tx.id}`}
+                            {tx.listing?.title ?? tx.listingTitle ?? allListings.find(l => l.id === tx.listing?.id)?.title ?? `Tranzakció #${tx.id}`}
                           </p>
                           <div className="flex items-center gap-1.5 mt-0.5">
                             {statusIcon}
@@ -308,7 +311,7 @@ const Dashboard = () => {
                           <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${typeCls}`}>
                             {listing.type === "OFFER" ? "Ajánlat" : "Kereslet"}
                           </span>
-                          <p className="text-sm font-bold text-indigo-400">{listing.pricePerHour} h</p>
+                          <p className="text-sm font-bold text-indigo-400">{listing.pricePerHour} kredit/óra</p>
                         </div>
                       </div>
                     );

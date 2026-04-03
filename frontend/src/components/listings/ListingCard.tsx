@@ -12,16 +12,17 @@ import { useToast } from "../../context/ToastContext"
 interface Props {
   listing: Listing
   onDelete?: (id: number) => void
-  onClaimed?: () => void
+  onClaimed?: (id: number) => void
+  initialClaimed?: boolean
 }
 
-export default function ListingCard({ listing, onClaimed }: Props) {
+export default function ListingCard({ listing, onClaimed, initialClaimed = false }: Props) {
   const { user } = useAuth()
   const { theme } = useTheme()
   const { showToast } = useToast()
   const isDark = theme === "dark"
   const [loading, setLoading] = useState(false)
-  const [claimed, setClaimed] = useState(false)
+  const [claimed, setClaimed] = useState(initialClaimed)
   const [expanded, setExpanded] = useState(false)
 
   const categoryName = typeof listing.category === 'object'
@@ -63,7 +64,7 @@ export default function ListingCard({ listing, onClaimed }: Props) {
         agreedHours: Math.min(Math.max(listing.estimatedHours ?? 1, 1), 6),
       })
       setClaimed(true)
-      onClaimed?.()
+      onClaimed?.(listing.id)
       showToast(`"${listing.title}" sikeresen igényelve!`, "success")
     } catch (err: any) {
       const raw = err.response?.data?.message || ""

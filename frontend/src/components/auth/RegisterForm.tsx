@@ -46,8 +46,16 @@ const RegisterComp = () => {
       navigate("/dashboard");
     } catch (error: any) {
       console.error(error);
-      const msg = error?.response?.data?.message || "Hiba történt a regisztráció során.";
-      showToast(msg, "error");
+      const raw = error?.response?.data?.message;
+      const translations: Record<string, string> = {
+        "Email already in use": "Ez az e-mail cím már foglalt.",
+        "Please provide a valid email address": "Kérjük, adjon meg egy érvényes e-mail címet.",
+        "Name must be at least 2 characters long": "A névnek legalább 2 karakter hosszúnak kell lennie.",
+        "Password must be at least 8 characters long": "A jelszónak legalább 8 karakter hosszúnak kell lennie.",
+        "Password must contain at least one uppercase letter and one special character": "A jelszónak tartalmaznia kell legalább egy nagybetűt és egy speciális karaktert.",
+      };
+      const msgs = Array.isArray(raw) ? raw : [raw];
+      msgs.forEach((m: string) => showToast(translations[m] ?? "Hiba történt a regisztráció során.", "error"));
     } finally {
       setLoading(false);
     }

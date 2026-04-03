@@ -12,7 +12,7 @@ import { Textarea } from "../components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Star, Loader2, Pencil, Trash2 } from "lucide-react";
 import { getUserById, getUserStats, updateMyProfile } from "../services/user.service";
-import { getMyListings } from "../services/listing.service";
+import { getMyListings, getListings } from "../services/listing.service";
 import { getMyTransactions, completeTransaction, cancelTransaction } from "../services/transaction.service";
 import { getUserReviews, createReview, type UserReview } from "../services/rating.service";
 import { ThemeSwitch } from "../components/ui/theme-switch";
@@ -47,6 +47,7 @@ const Profile = () => {
   const [profileData, setProfileData] = useState<User | null>(null);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
+  const [allListings, setAllListings] = useState<Listing[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [reviews, setReviews] = useState<UserReview[]>([]);
   const [loading, setLoading] = useState(true);
@@ -75,18 +76,20 @@ const Profile = () => {
     const fetchAllData = async () => {
       try {
         setLoading(true);
-        const [userData, statsData, listingsData, txData, reviewsData] = await Promise.all([
+        const [userData, statsData, listingsData, txData, reviewsData, allListingsData] = await Promise.all([
           getUserById(user.id),
           getUserStats(user.id),
           getMyListings(),
           getMyTransactions(),
           getUserReviews(user.id),
+          getListings(),
         ]);
         setProfileData(userData);
         setStats(statsData);
         setListings(listingsData);
         setTransactions(txData);
         setReviews(reviewsData);
+        setAllListings(allListingsData);
         setFormName(userData.name ?? "");
         setFormBio(userData.bio ?? "");
       } catch (err) {
@@ -196,8 +199,7 @@ const Profile = () => {
       await refreshAfterTxAction();
       showToast("Tranzakció sikeresen lezárva!", "success");
     } catch (err: any) {
-      const msg = err?.response?.data?.message || "Hiba a tranzakció lezárásakor.";
-      showToast(msg, "error");
+      showToast("Hiba a tranzakció lezárásakor.", "error");
     } finally {
       setTxActionLoading(null);
     }
@@ -210,8 +212,7 @@ const Profile = () => {
       await refreshAfterTxAction();
       showToast("Tranzakció törölve.", "warning");
     } catch (err: any) {
-      const msg = err?.response?.data?.message || "Hiba a tranzakció törlésekor.";
-      showToast(msg, "error");
+      showToast("Hiba a tranzakció törlésekor.", "error");
     } finally {
       setTxActionLoading(null);
     }
@@ -240,8 +241,7 @@ const Profile = () => {
       }
       showToast("Értékelés sikeresen elküldve!", "success");
     } catch (err: any) {
-      const msg = err?.response?.data?.message || "Hiba az értékelés beküldésekor.";
-      showToast(msg, "error");
+      showToast("Hiba az értékelés beküldésekor.", "error");
     } finally {
       setReviewSubmitting(false);
     }
@@ -438,7 +438,7 @@ const Profile = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="flex justify-between items-center">
-                        <p className="text-indigo-400 font-black text-lg">{item.pricePerHour} óra/h</p>
+                        <p className="text-indigo-400 font-black text-lg">{item.pricePerHour} kredit/óra</p>
                         <span className={`text-[10px] uppercase px-2 py-1 rounded font-semibold ${typeBadge}`}>
                           {item.type === "OFFER" ? "Ajánlat" : "Kereslet"}
                         </span>
@@ -567,7 +567,7 @@ const Profile = () => {
                     const isPending = tx.status === "PENDING";
                     const isCompleted = tx.status === "COMPLETED";
                     const isLoading = txActionLoading === tx.id;
-                    const txTitle = tx.listing?.title ?? tx.listingTitle;
+                    const txTitle = tx.listing?.title ?? tx.listingTitle ?? allListings.find(l => l.id === tx.listing?.id)?.title ?? `Tranzakció #${tx.id}`;
                     // Értékelés írható: lezárt tranzakció, ahol részt vett a user, és még nem értékelt
                     const canReview = isCompleted && (isClient || isProvider) && !reviewedTxIds.has(tx.id);
                     const isReviewOpen = reviewOpen === tx.id;
@@ -577,7 +577,7 @@ const Profile = () => {
                         <CardContent className="p-5 flex flex-col gap-4">
                           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                             <div>
-                              <p className={`font-bold ${isDark ? "text-white" : "text-gray-900"}`}>{txTitle ?? `Tranzakció #${tx.id}`}</p>
+                              <p className={`font-bold ${isDark ? "text-white" : "text-gray-900"}`}>{txTitle}</p>
                               <p className={`text-xs mt-1 ${subText}`}>{tx.client?.name} → {tx.provider?.name}</p>
                               <p className="text-xs text-gray-500 mt-0.5">{new Date(tx.createdAt).toLocaleDateString("hu-HU")}</p>
                             </div>

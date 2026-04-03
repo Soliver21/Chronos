@@ -1,15 +1,19 @@
 import { useEffect, useState } from "react"
 import { useTheme } from "../context/ThemeContext"
+import { useAuth } from "../context/AuthContext"
 import type { Listing, ListingFilter } from "../types/listing.types"
 import { getListings } from "../services/listing.service"
+import { getMyTransactions } from "../services/transaction.service"
 import ListingCard from "../components/listings/ListingCard"
 import FilterBar from "../components/listings/FilterBar"
 import CreateListingButton from "../components/listings/CreateListingButton"
 import Dashbar from "../components/dashboard/Dashbar"
 
 export default function Listings() {
+  const { user } = useAuth()
   const [allListings, setAllListings] = useState<Listing[]>([])
   const [listings, setListings] = useState<Listing[]>([])
+  const [claimedListingIds, setClaimedListingIds] = useState<Set<number>>(new Set())
   const { theme } = useTheme()
   const isDark = theme === "dark"
 
@@ -18,9 +22,26 @@ export default function Listings() {
   const emptyText = isDark ? "text-gray-400" : "text-gray-500"
 
   const loadListings = async () => {
+    // A backend már kiszűri a PENDING hirdetéseket
     const data = await getListings()
     setAllListings(data)
     setListings(data)
+  }
+
+  const loadClaimedIds = async () => {
+    try {
+      const txs = await getMyTransactions()
+      // Azok a hirdetések amiket én igényeltem (PENDING) – disabled gombhoz
+      const claimed = new Set(
+        txs
+          .filter(tx => tx.status === "PENDING" && tx.client?.id === user?.id)
+          .map(tx => tx.listing?.id)
+          .filter((id): id is number => id !== undefined && id !== null)
+      )
+      setClaimedListingIds(claimed)
+    } catch {
+      // nem blokkolja az oldalt
+    }
   }
 
   const applyFilters = (filters: ListingFilter) => {
@@ -45,7 +66,10 @@ export default function Listings() {
     setListings(filtered)
   }
 
-  useEffect(() => { loadListings() }, [])
+  useEffect(() => {
+    loadListings()
+    loadClaimedIds()
+  }, [])
 
   return (
     <main className={`min-h-screen transition-colors duration-300 ${pageBg}`}>
@@ -73,7 +97,14 @@ export default function Listings() {
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                 {listings.map((listing) => (
-                  <ListingCard key={listing.id} listing={listing} onClaimed={() => loadListings()} />
+                  <ListingCard
+                    key={listing.id}
+                    listing={listing}
+                    initialClaimed={claimedListingIds.has(listing.id)}
+                    onClaimed={(id) => {
+                      setClaimedListingIds(prev => new Set(prev).add(id))
+                    }}
+                  />
                 ))}
               </div>
             )}

@@ -108,10 +108,10 @@ export default function CreateListingButton({ onCreated }: Props) {
       }
       if (Array.isArray(rawMessage) && rawMessage.length > 0) {
         rawMessage.forEach((m: string) => {
-          showToast(errorTranslations[m] ?? m, "error")
+          showToast(errorTranslations[m] ?? "Hiba történt a hirdetés létrehozásakor.", "error")
         })
       } else if (typeof rawMessage === "string") {
-        showToast(errorTranslations[rawMessage] ?? rawMessage, "error")
+        showToast(errorTranslations[rawMessage] ?? "Hiba történt a hirdetés létrehozásakor.", "error")
       } else {
         showToast("Hiba történt a hirdetés létrehozásakor.", "error")
       }

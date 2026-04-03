@@ -55,12 +55,12 @@ function FilterFields({ values, categories, onChange, isDark }: {
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className={`text-sm font-semibold block mb-1.5 ${labelCls}`}>Min ár</label>
-          <Input name="minPrice" type="number" placeholder="0" value={values.minPrice ?? ""} onChange={onChange} className={`rounded-lg ${inputCls}`} />
+          <label className={`text-sm font-semibold block mb-1.5 ${labelCls}`}>Min kr/óra</label>
+          <Input name="minPrice" type="number" placeholder="1" min={1} max={10} value={values.minPrice ?? ""} onChange={onChange} className={`rounded-lg ${inputCls}`} />
         </div>
         <div>
-          <label className={`text-sm font-semibold block mb-1.5 ${labelCls}`}>Max ár</label>
-          <Input name="maxPrice" type="number" placeholder="1000" value={values.maxPrice ?? ""} onChange={onChange} className={`rounded-lg ${inputCls}`} />
+          <label className={`text-sm font-semibold block mb-1.5 ${labelCls}`}>Max kr/óra</label>
+          <Input name="maxPrice" type="number" placeholder="10" min={1} max={10} value={values.maxPrice ?? ""} onChange={onChange} className={`rounded-lg ${inputCls}`} />
         </div>
       </div>
     </div>
@@ -72,8 +72,8 @@ function buildFilterSummary(filters: ListingFilter): string {
   if (filters.search) parts.push(`"${filters.search}"`)
   if (filters.category) parts.push(String(filters.category))
   if (filters.type) parts.push(filters.type === "OFFER" ? "Ajánlat" : "Keresett")
-  if (filters.minPrice !== undefined) parts.push(`min. ${filters.minPrice} $/h`)
-  if (filters.maxPrice !== undefined) parts.push(`max. ${filters.maxPrice} $/h`)
+  if (filters.minPrice !== undefined) parts.push(`min. ${filters.minPrice} kr/óra`)
+  if (filters.maxPrice !== undefined) parts.push(`max. ${filters.maxPrice} kr/óra`)
   return parts.join(", ")
 }
 
@@ -95,8 +95,18 @@ export default function FilterBar({ onFilter, mobileOnly = false }: Props) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target
     let v: any = value
-    if (type === "number") v = value === "" ? undefined : parseFloat(value)
-    setFilters(prev => ({ ...prev, [name]: v || undefined }))
+    if (type === "number") {
+      if (value === "") {
+        v = undefined
+      } else {
+        v = parseFloat(value)
+        if ((name === "minPrice" || name === "maxPrice") && !isNaN(v)) {
+          if (v < 1) v = 1
+          if (v > 10) v = 10
+        }
+      }
+    }
+    setFilters(prev => ({ ...prev, [name]: v ?? undefined }))
   }
 
   const handleApply = (close?: () => void) => {
