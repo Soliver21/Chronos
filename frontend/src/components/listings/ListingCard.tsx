@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { type Listing } from "../../types/listing.types"
 import { Card } from "../ui/card"
 import { Button } from "../ui/button"
@@ -23,6 +23,9 @@ export default function ListingCard({ listing, onClaimed, initialClaimed = false
   const isDark = theme === "dark"
   const [loading, setLoading] = useState(false)
   const [claimed, setClaimed] = useState(initialClaimed)
+  useEffect(() => {
+    if (initialClaimed) setClaimed(true)
+  }, [initialClaimed])
   const [expanded, setExpanded] = useState(false)
 
   const categoryName = typeof listing.category === 'object'
@@ -79,7 +82,11 @@ export default function ListingCard({ listing, onClaimed, initialClaimed = false
         }
       } else if (raw.includes("own listing")) {
         msg = "Saját hirdetést nem igényelhetsz."
-      } else if (raw.includes("not found")) {
+      } else if (raw.includes("already requested")) {
+        msg = "Ezt a hirdetést már igényelted."
+        setClaimed(true)
+      }
+      else if (raw.includes("not found")) {
         msg = "A hirdetés nem található."
       }
       showToast(msg, "error")
