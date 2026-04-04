@@ -71,6 +71,20 @@ export class TransactionService {
         );
       }
 
+      const existingTx = await tx.transaction.findFirst({
+        where: {
+          clientId,
+          listingId,
+          status: TransactionStatus.PENDING,
+        },
+      });
+
+      if (existingTx) {
+        throw new BadRequestException(
+          'You have already requested this listing',
+        );
+      }
+
       const totalPrice = listing.pricePerHour * dto.agreedHours;
 
       const client = await tx.user.findUnique({
