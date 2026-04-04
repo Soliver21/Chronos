@@ -90,9 +90,6 @@ export function LoginForm() {
             <div className="grid gap-2 text-left">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password" className={`font-semibold ${labelCls}`}>Jelszó</Label>
-                <Link to="/forgot-password" className={`text-xs hover:underline ${linkCls}`}>
-                  Elfelejtette?
-                </Link>
               </div>
               <div className="relative">
                 <Input
