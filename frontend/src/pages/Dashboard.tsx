@@ -158,7 +158,7 @@ const Dashboard = () => {
                     );
                   })}
                   <div className={`px-5 py-3 border-t ${t.divider}`}>
-                    <button onClick={() => navigate("/profile")} className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 transition-colors">
+                    <button onClick={() => navigate("/profile?tab=transactions")} className="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1 transition-colors">
                       Összes megtekintése <ArrowUpRight size={12} />
                     </button>
                   </div>

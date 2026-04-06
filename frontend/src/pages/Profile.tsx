@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { useToast } from "../context/ToastContext";
@@ -53,6 +54,8 @@ const buildTheme = (isDark: boolean) => ({
     bg-transparent transition-all shadow-none whitespace-nowrap flex-1 text-center`,
 });
 
+const VALID_TABS = ["profile", "listings", "transactions", "reviews"] as const;
+
 const Profile = () => {
   const { user, login, token } = useAuth();
   const { theme } = useTheme();
@@ -60,6 +63,15 @@ const Profile = () => {
   const isDark = theme === "dark";
   const t = buildTheme(isDark);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // URL-ből olvassuk az aktív tabot
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab") ?? "profile";
+  const activeTab = VALID_TABS.includes(tabParam as any) ? tabParam : "profile";
+
+  const handleTabChange = (value: string) => {
+    setSearchParams({ tab: value }, { replace: true });
+  };
 
   // Adatok
   const [profileData, setProfileData] = useState<User | null>(null);
@@ -191,7 +203,6 @@ const Profile = () => {
       setReviewOpen(null);
       setReviewRating(5);
       setReviewComment("");
-      // Értékelések és statisztikák frissítése
       if (user?.id) {
         const [reviewsData, statsData] = await Promise.all([
           getUserReviews(user.id),
@@ -206,7 +217,7 @@ const Profile = () => {
     }
   };
 
-  // Hirdetés szerkesztő megnyitása – form feltöltése az aktuális adatokkal
+  // Hirdetés szerkesztő megnyitása
   const openEditListing = (item: Listing) => {
     setEditingListing(item);
     setEditForm({
@@ -218,11 +229,10 @@ const Profile = () => {
     });
   };
 
-  // Hirdetés módosítása – validáció + mentés
+  // Hirdetés módosítása
   const handleEditSave = async () => {
     if (!editingListing) return;
 
-    // Egyszerű validáció – minden kötelező mező ellenőrzése
     const price = parseFloat(editForm.pricePerHour);
     const hours = parseInt(editForm.estimatedHours);
     const errors: [boolean, string][] = [
@@ -310,7 +320,8 @@ const Profile = () => {
             ))}
           </div>
 
-          <Tabs defaultValue="profile" className="w-full">
+          {/* Kontrollált Tabs – URL ?tab= paraméterből */}
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className={`w-full flex border-b bg-transparent p-0 h-auto mb-6 gap-0 ${t.tabBorder}`}>
               <TabsTrigger value="profile"      className={t.tabTrigger}><span className="hidden xs:inline">Saját </span>Adatok</TabsTrigger>
               <TabsTrigger value="listings"     className={t.tabTrigger}>Hirdetések ({listings.length})</TabsTrigger>
@@ -318,7 +329,7 @@ const Profile = () => {
               <TabsTrigger value="reviews"      className={t.tabTrigger}>Értékelések ({reviews.length})</TabsTrigger>
             </TabsList>
 
-            {/* ══ PROFIL SZERKESZTÉS ══ */}
+            {/* PROFIL SZERKESZTÉS */}
             <TabsContent value="profile" className="focus-visible:outline-none">
               <Card className={`shadow-xl overflow-hidden ${t.cardBg}`}>
                 <CardHeader className={`border-b py-4 ${t.cardHeaderBg}`}>
@@ -384,7 +395,7 @@ const Profile = () => {
               </Card>
             </TabsContent>
 
-            {/* ══ HIRDETÉSEK ══ */}
+            {/* HIRDETÉSEK */}
             <TabsContent value="listings" className="focus-visible:outline-none">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {listings.length > 0 ? listings.map((item: Listing) => (
@@ -431,7 +442,6 @@ const Profile = () => {
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                   <div className={`w-full max-w-md rounded-2xl shadow-2xl border overflow-y-auto max-h-[90vh] ${t.modalBg}`}>
 
-                    {/* Modal fejléc */}
                     <div className={`sticky top-0 flex items-center justify-between p-5 border-b ${t.modalBg}`}>
                       <h2 className={`text-xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>Hirdetés módosítása</h2>
                       <button onClick={() => setEditingListing(null)} className={`p-1.5 rounded-lg transition-colors ${isDark ? "hover:bg-white/10 text-gray-400" : "hover:bg-gray-100 text-gray-500"}`}>
@@ -439,7 +449,6 @@ const Profile = () => {
                       </button>
                     </div>
 
-                    {/* Modal törzs */}
                     <div className="p-6 space-y-4">
                       <div>
                         <label className={`text-sm font-semibold block mb-2 ${t.labelCls}`}>Cím <span className="text-red-500">*</span></label>
@@ -477,7 +486,6 @@ const Profile = () => {
                       </div>
                     </div>
 
-                    {/* Modal lábléc */}
                     <div className={`flex gap-3 p-5 border-t ${isDark ? "border-white/10" : "border-gray-100"}`}>
                       <button onClick={() => setEditingListing(null)}
                         className={`flex-1 py-2.5 rounded-xl border text-sm font-semibold transition-colors ${t.modalCancel}`}>
@@ -493,7 +501,7 @@ const Profile = () => {
               )}
             </TabsContent>
 
-            {/* ══ TRANZAKCIÓK ══ */}
+            {/* TRANZAKCIÓK */}
             <TabsContent value="transactions" className="focus-visible:outline-none">
               {transactions.length > 0 ? (
                 <div className="space-y-4">
@@ -503,7 +511,6 @@ const Profile = () => {
                     const isPending  = tx.status === "PENDING";
                     const isCompleted = tx.status === "COMPLETED";
                     const txTitle    = tx.listing?.title ?? tx.listingTitle ?? `Tranzakció #${tx.id}`;
-                    // Értékelés írható: lezárt tranzakció, ahol részt vett a user, és még nem értékelt
                     const canReview  = isCompleted && (isClient || isProvider) && !reviewedTxIds.has(tx.id);
 
                     return (
@@ -530,7 +537,6 @@ const Profile = () => {
                             </div>
                           </div>
 
-                          {/* Folyamatban lévő tranzakció gombjai */}
                           {isPending && (isClient || isProvider) && (
                             <div className="flex justify-end gap-2">
                               {isClient && (
@@ -546,7 +552,6 @@ const Profile = () => {
                             </div>
                           )}
 
-                          {/* Értékelés írása – lezárt tranzakcióknál */}
                           {canReview && (
                             <div>
                               {reviewOpen !== tx.id ? (
@@ -600,7 +605,7 @@ const Profile = () => {
               )}
             </TabsContent>
 
-            {/* ══ ÉRTÉKELÉSEK ══ */}
+            {/* ÉRTÉKELÉSEK */}
             <TabsContent value="reviews" className="focus-visible:outline-none">
               {reviews.length > 0 ? (
                 <div className="space-y-4">

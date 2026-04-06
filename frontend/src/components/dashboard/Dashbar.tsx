@@ -12,7 +12,17 @@ const Dashbar = () => {
   const [open, setOpen] = useState(false);
   const isDark = theme === "dark";
 
-  const isActive = (path: string) => location.pathname === path;
+  // Query paramétert is kezelő aktív link ellenőrzés
+  const isActive = (path: string) => {
+    const [base, query] = path.split("?");
+    if (query) {
+      return location.pathname === base && location.search.includes(query);
+    }
+    return location.pathname === path;
+  };
+
+  // Profilom gomb külön: csak akkor aktív, ha /profile-on vagyunk ÉS nincs tab=transactions
+  const isProfileActive = location.pathname === "/profile" && !location.search.includes("tab=transactions");
 
   const navBg = isDark ? "bg-[#0f0f14]/90 border-white/5" : "bg-white/90 border-gray-200";
   const nameCls = isDark ? "text-white" : "text-gray-900";
@@ -61,16 +71,16 @@ const Dashbar = () => {
           >
             Chronos.
           </h2>
-          {/* lg-nál törjük mobilra (1024px) */}
-          <div className="hidden lg:flex items-center gap-1">
+          <div className="hidden xl:flex items-center gap-1">
             {navLink("/", "Főoldal", "bi-house-door")}
             {navLink("/dashboard", "Vezérlőpult", "bi-speedometer2")}
             {navLink("/listings", "Hirdetések", "bi-card-list")}
+            {navLink("/profile?tab=transactions", "Tranzakciók", "bi-arrow-left-right")}
           </div>
         </div>
 
         {/* Desktop jobb oldal */}
-        <div className="hidden lg:flex items-center gap-3">
+        <div className="hidden xl:flex items-center gap-3">
           <button
             onClick={toggleTheme}
             className={`w-9 h-9 cursor-pointer rounded-lg flex items-center justify-center transition-colors ${
@@ -89,13 +99,13 @@ const Dashbar = () => {
           <Link
             to="/profile"
             className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
-              isActive("/profile")
+              isProfileActive
                 ? isDark ? "bg-white/10 border-white/20 text-white font-semibold" : "bg-gray-100 border-gray-300 text-gray-900 font-semibold"
                 : profileBtnCls
             }`}
           >
             <i className="bi bi-person" /> Profilom
-            {isActive("/profile") && <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 inline-block" />}
+            {isProfileActive && <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 inline-block" />}
           </Link>
 
           <button
@@ -106,9 +116,9 @@ const Dashbar = () => {
           </button>
         </div>
 
-        {/* Hamburger – lg alatt látható */}
+        {/* Hamburger */}
         <button
-          className="lg:hidden flex flex-col justify-center items-center w-9 h-9 gap-[5px] rounded-lg hover:bg-white/5 transition-colors"
+          className="xl:hidden flex flex-col justify-center items-center w-9 h-9 gap-[5px] rounded-lg hover:bg-white/5 transition-colors"
           onClick={() => setOpen(!open)}
           aria-label="Menü megnyitása"
         >
@@ -119,11 +129,12 @@ const Dashbar = () => {
       </div>
 
       {/* Mobil menü */}
-      <div className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${open ? "max-h-96" : "max-h-0"}`}>
+      <div className={`xl:hidden overflow-hidden transition-all duration-300 ease-in-out ${open ? "max-h-96" : "max-h-0"}`}>
         <div className={`border-t px-4 pb-4 space-y-1 ${mobileBg}`}>
           {mobileNavLink("/", "Főoldal", "bi-house-door")}
           {mobileNavLink("/dashboard", "Vezérlőpult", "bi-speedometer2")}
           {mobileNavLink("/listings", "Hirdetések", "bi-card-list")}
+          {mobileNavLink("/profile?tab=transactions", "Tranzakciók", "bi-arrow-left-right")}
 
           <div className="pt-2 border-t border-white/5">
             <div className="px-3 py-2 flex items-center gap-3">
