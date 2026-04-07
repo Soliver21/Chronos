@@ -26,29 +26,29 @@ import type { Transaction } from "../types/transaction.types";
 
 // Téma-alapú osztályok – dark/light mód szerint
 const buildTheme = (isDark: boolean) => ({
-  pageBg:         isDark ? "bg-[#0a0a0a] text-white"                        : "bg-white text-gray-900",
-  cardBg:         isDark ? "bg-[#0f0f14] border-white/10"                   : "bg-white border-gray-200",
-  cardHeaderBg:   isDark ? "border-white/5 bg-white/5"                      : "border-gray-100 bg-gray-50",
-  subText:        isDark ? "text-gray-400"                                   : "text-gray-500",
-  labelCls:       isDark ? "text-gray-400"                                   : "text-gray-600",
-  inputBg:        isDark ? "bg-[#1a1a1f] border-white/10 text-white"        : "bg-white border-gray-300 text-gray-900",
-  inputReadonly:  isDark ? "bg-[#0a0a0a] border-white/5 text-gray-500 opacity-60 cursor-not-allowed"
-                        : "bg-gray-100 border-gray-200 text-gray-400 opacity-70 cursor-not-allowed",
-  textareaBg:     isDark ? "bg-[#1a1a1f] border-white/10 text-white"        : "bg-white border-gray-300 text-gray-900",
-  tabBorder:      isDark ? "border-white/10"                                 : "border-gray-200",
-  listingCardBg:  isDark ? "bg-[#0f0f14] border-white/10 hover:border-indigo-500/50"
-                        : "bg-white border-gray-200 hover:border-indigo-400",
-  txCardBg:       isDark ? "bg-[#0f0f14] border-white/10"                   : "bg-white border-gray-200",
-  emptyBorder:    isDark ? "border-white/10 bg-white/5"                     : "border-gray-200 bg-gray-50",
-  typeBadge:      isDark ? "bg-white/5 text-gray-400"                       : "bg-gray-100 text-gray-500",
-  reviewFormBg:   isDark ? "bg-white/5 border-white/10"                     : "bg-gray-50 border-gray-200",
+  pageBg: isDark ? "bg-[#0a0a0a] text-white" : "bg-white text-gray-900",
+  cardBg: isDark ? "bg-[#0f0f14] border-white/10" : "bg-white border-gray-200",
+  cardHeaderBg: isDark ? "border-white/5 bg-white/5" : "border-gray-100 bg-gray-50",
+  subText: isDark ? "text-gray-400" : "text-gray-500",
+  labelCls: isDark ? "text-gray-400" : "text-gray-600",
+  inputBg: isDark ? "bg-[#1a1a1f] border-white/10 text-white" : "bg-white border-gray-300 text-gray-900",
+  inputReadonly: isDark ? "bg-[#0a0a0a] border-white/5 text-gray-500 opacity-60 cursor-not-allowed"
+    : "bg-gray-100 border-gray-200 text-gray-400 opacity-70 cursor-not-allowed",
+  textareaBg: isDark ? "bg-[#1a1a1f] border-white/10 text-white" : "bg-white border-gray-300 text-gray-900",
+  tabBorder: isDark ? "border-white/10" : "border-gray-200",
+  listingCardBg: isDark ? "bg-[#0f0f14] border-white/10 hover:border-indigo-500/50"
+    : "bg-white border-gray-200 hover:border-indigo-400",
+  txCardBg: isDark ? "bg-[#0f0f14] border-white/10" : "bg-white border-gray-200",
+  emptyBorder: isDark ? "border-white/10 bg-white/5" : "border-gray-200 bg-gray-50",
+  typeBadge: isDark ? "bg-white/5 text-gray-400" : "bg-gray-100 text-gray-500",
+  reviewFormBg: isDark ? "bg-white/5 border-white/10" : "bg-gray-50 border-gray-200",
   reviewTextarea: isDark ? "bg-[#1a1a1f] border-white/10 text-white placeholder-gray-600"
-                        : "bg-white border-gray-200 text-gray-900 placeholder-gray-400",
-  modalBg:        isDark ? "bg-[#0f0f14] border-white/10"                   : "bg-white border-gray-200",
-  modalInput:     isDark ? "bg-[#1a1a1f] border-white/10 text-white placeholder:text-gray-600 focus:border-indigo-500/50"
-                        : "bg-white border-gray-200 text-gray-900 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100",
-  modalCancel:    isDark ? "border-white/10 text-gray-400 hover:bg-white/5" : "border-gray-200 text-gray-600 hover:bg-gray-50",
-  dividerBorder:  isDark ? "border-white/10"                                : "border-gray-100",
+    : "bg-white border-gray-200 text-gray-900 placeholder-gray-400",
+  modalBg: isDark ? "bg-[#0f0f14] border-white/10" : "bg-white border-gray-200",
+  modalInput: isDark ? "bg-[#1a1a1f] border-white/10 text-white placeholder:text-gray-600 focus:border-indigo-500/50"
+    : "bg-white border-gray-200 text-gray-900 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100",
+  modalCancel: isDark ? "border-white/10 text-gray-400 hover:bg-white/5" : "border-gray-200 text-gray-600 hover:bg-gray-50",
+  dividerBorder: isDark ? "border-white/10" : "border-gray-100",
   tabTrigger: `rounded-none cursor-pointer border-b-2 border-transparent px-2 pb-2.5 pt-2 font-semibold text-[11px] sm:text-xs md:text-sm text-gray-500
     data-[state=active]:border-indigo-500 ${isDark ? "data-[state=active]:text-white" : "data-[state=active]:text-gray-900"}
     bg-transparent transition-all shadow-none whitespace-nowrap flex-1 text-center`,
@@ -236,15 +236,15 @@ const Profile = () => {
     const price = parseFloat(editForm.pricePerHour);
     const hours = parseInt(editForm.estimatedHours);
     const errors: [boolean, string][] = [
-      [!editForm.title.trim(),                              "A cím megadása kötelező."],
-      [!editForm.description.trim(),                        "A leírás megadása kötelező."],
-      [!editForm.pricePerHour || isNaN(price),              "Az ár/óra megadása kötelező."],
-      [price < 1,                                           "Az ár/óra minimum 1 lehet."],
-      [price > 10,                                          "Az ár/óra maximum 10 lehet."],
-      [!editForm.estimatedHours || isNaN(hours),            "A becsült órák megadása kötelező."],
-      [hours < 1,                                           "A becsült órák minimum 1 lehet."],
-      [hours > 6,                                           "A becsült órák maximum 6 lehet."],
-      [!editForm.categoryId,                                "A kategória kiválasztása kötelező."],
+      [!editForm.title.trim(), "A cím megadása kötelező."],
+      [!editForm.description.trim(), "A leírás megadása kötelező."],
+      [!editForm.pricePerHour || isNaN(price), "Az ár/óra megadása kötelező."],
+      [price < 1, "Az ár/óra minimum 1 lehet."],
+      [price > 10, "Az ár/óra maximum 10 lehet."],
+      [!editForm.estimatedHours || isNaN(hours), "A becsült órák megadása kötelező."],
+      [hours < 1, "A becsült órák minimum 1 lehet."],
+      [hours > 6, "A becsült órák maximum 6 lehet."],
+      [!editForm.categoryId, "A kategória kiválasztása kötelező."],
     ];
     const firstError = errors.find(([cond]) => cond);
     if (firstError) { showToast(firstError[1], "error"); return; }
@@ -278,7 +278,7 @@ const Profile = () => {
 
   // Statisztikai kártyák adatai
   const statCards = [
-    { label: "Összes hirdetés",   value: listings.length },
+    { label: "Összes hirdetés", value: listings.length },
     { label: "Kapott értékelések", value: stats?.totalReviews ?? 0 },
     {
       label: "Átlag értékelés",
@@ -323,10 +323,10 @@ const Profile = () => {
           {/* Kontrollált Tabs – URL ?tab= paraméterből */}
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className={`w-full flex border-b bg-transparent p-0 h-auto mb-6 gap-0 ${t.tabBorder}`}>
-              <TabsTrigger value="profile"      className={t.tabTrigger}><span className="hidden xs:inline">Saját </span>Adatok</TabsTrigger>
-              <TabsTrigger value="listings"     className={t.tabTrigger}>Hirdetések ({listings.length})</TabsTrigger>
+              <TabsTrigger value="profile" className={t.tabTrigger}><span className="hidden xs:inline">Saját </span>Adatok</TabsTrigger>
+              <TabsTrigger value="listings" className={t.tabTrigger}>Hirdetések ({listings.length})</TabsTrigger>
               <TabsTrigger value="transactions" className={t.tabTrigger}>Tranzakciók ({transactions.length})</TabsTrigger>
-              <TabsTrigger value="reviews"      className={t.tabTrigger}>Értékelések ({reviews.length})</TabsTrigger>
+              <TabsTrigger value="reviews" className={t.tabTrigger}>Értékelések ({reviews.length})</TabsTrigger>
             </TabsList>
 
             {/* PROFIL SZERKESZTÉS */}
@@ -341,14 +341,26 @@ const Profile = () => {
                   <div className="flex justify-center w-full">
                     <div className="relative group">
                       <Avatar className={`w-32 h-32 border-4 shadow-2xl transition-transform group-hover:scale-105 ${isDark ? "border-[#1a1a1f]" : "border-gray-100"}`}>
-                        <AvatarImage
-                          src={profileData?.avatar ? `${profileData.avatar}` : undefined}
-                          alt={profileData?.name ?? ""}
-                        />
+
+                        {(() => {
+                          const baseUrl = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
+                          const avatarSrc = profileData?.avatar
+                            ? `${baseUrl.replace(/\/$/, "")}${profileData.avatar}`
+                            : undefined;
+
+                          return (
+                            <AvatarImage
+                              src={avatarSrc}
+                              alt={profileData?.name ?? ""}
+                            />
+                          );
+                        })()}
+
                         <AvatarFallback className="text-5xl bg-gradient-to-br from-indigo-600 to-purple-700 text-white font-bold">
                           {(profileData?.name || user?.name || "?").substring(0, 1).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
+
                       <button
                         onClick={() => fileInputRef.current?.click()}
                         className={`absolute bottom-1 right-1 bg-indigo-600 p-2 rounded-full border-2 hover:bg-indigo-500 transition-colors ${isDark ? "border-[#0f0f14]" : "border-white"}`}
@@ -359,7 +371,14 @@ const Profile = () => {
                           <path d="M2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 9.172 2H6.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 3.172 4H2zm.5 2a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm9 2.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z" />
                         </svg>
                       </button>
-                      <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleAvatarChange}
+                      />
                     </div>
                   </div>
 
@@ -506,12 +525,12 @@ const Profile = () => {
               {transactions.length > 0 ? (
                 <div className="space-y-4">
                   {transactions.map((tx: Transaction) => {
-                    const isClient   = tx.client?.id === user?.id;
+                    const isClient = tx.client?.id === user?.id;
                     const isProvider = tx.provider?.id === user?.id;
-                    const isPending  = tx.status === "PENDING";
+                    const isPending = tx.status === "PENDING";
                     const isCompleted = tx.status === "COMPLETED";
-                    const txTitle    = tx.listing?.title ?? tx.listingTitle ?? `Tranzakció #${tx.id}`;
-                    const canReview  = isCompleted && (isClient || isProvider) && !reviewedTxIds.has(tx.id);
+                    const txTitle = tx.listing?.title ?? tx.listingTitle ?? `Tranzakció #${tx.id}`;
+                    const canReview = isCompleted && (isClient || isProvider) && !reviewedTxIds.has(tx.id);
 
                     return (
                       <Card key={tx.id} className={t.txCardBg}>
@@ -527,11 +546,10 @@ const Profile = () => {
                                 <p className="text-indigo-400 font-black">{tx.agreedHours} óra</p>
                                 <p className={`text-xs ${t.subText}`}>{tx.totalPrice} kredit</p>
                               </div>
-                              <span className={`text-[10px] font-bold uppercase px-3 py-1.5 rounded-full ${
-                                tx.status === "COMPLETED" ? "bg-green-500/20 text-green-500"
-                                : tx.status === "CANCELLED" ? "bg-red-500/20 text-red-400"
-                                : "bg-yellow-500/20 text-yellow-500"
-                              }`}>
+                              <span className={`text-[10px] font-bold uppercase px-3 py-1.5 rounded-full ${tx.status === "COMPLETED" ? "bg-green-500/20 text-green-500"
+                                  : tx.status === "CANCELLED" ? "bg-red-500/20 text-red-400"
+                                    : "bg-yellow-500/20 text-yellow-500"
+                                }`}>
                                 {tx.status === "PENDING" ? "Folyamatban" : tx.status === "COMPLETED" ? "Teljesítve" : "Törölve"}
                               </span>
                             </div>
